@@ -9,8 +9,8 @@ não é verificável, a fase não fecha.
 
 **Entrega.** Repo, schema no Supabase, pesos semeados, contratos JSON escritos.
 
-- [ ] `sql/001_init.sql` rodado no Supabase
-- [ ] `data/pesos_incidencia.json` semeado em `pesos_incidencia`
+- [x] `sql/001_init.sql` rodado no Supabase (projeto `uwnuehhebwckbbhkaqyx`, 2026-09-28)
+- [x] `data/pesos_incidencia.json` semeado em `pesos_incidencia` e `pesos_disciplina`
 - [ ] Credenciais de LLM e Supabase criadas no n8n
 - [ ] Workflow `99-erro` (Error Trigger) no ar antes de tudo
 

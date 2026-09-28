@@ -7,3 +7,4 @@ __pycache__/
 *.pyc
 n8n/*.credentials.json
 sql/seed_pesos.sql
+.claude/settings.local.json

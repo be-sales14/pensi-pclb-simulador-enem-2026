@@ -1,8 +1,9 @@
 -- Simulado ENEM · schema inicial
 -- Executar no SQL Editor do Supabase.
 
-create extension if not exists "pgcrypto";
-create extension if not exists "vector";
+-- No Supabase, extensao mora no schema extensions (que ja esta no search_path).
+create extension if not exists "pgcrypto" with schema extensions;
+create extension if not exists "vector"   with schema extensions;
 
 -- ---------------------------------------------------------------- pesos
 
@@ -200,3 +201,14 @@ create policy respostas_proprias on respostas
 -- O front acompanha o proprio job por Realtime. So leitura; quem escreve e o n8n.
 create policy jobs_proprios_leitura on jobs
   for select using (auth.uid() = aluno_id);
+
+-- ---------------------------------------------------------------- grants das views
+
+-- View simples sobre uma tabela e atualizavel no Postgres, roda como o dono (ignora
+-- RLS), e o Supabase da ALL ao anon por default. Sem este revoke, o browser consegue
+-- dar UPDATE e DELETE em questoes atraves da view.
+revoke all on questoes_publicas from anon, authenticated;
+grant select on questoes_publicas to anon, authenticated;
+
+-- Analise de item e do back.
+revoke all on item_stats from anon, authenticated;
