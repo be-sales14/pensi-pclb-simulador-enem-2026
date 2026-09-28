@@ -1,0 +1,123 @@
+{
+  "versao": "1.0.0",
+  "atualizado_em": "2026-09-09",
+  "doc": "docs/03_DISTRIBUICAO_ENEM.md",
+  "aviso": "confianca=provisorio NAO pode ser apresentado como medido em material publicado.",
+
+  "estrutura_prova": {
+    "LC": { "nome": "Linguagens e suas Tecnologias",    "dia": 1, "questoes": [1, 45] },
+    "CH": { "nome": "Ciencias Humanas e suas Tecnologias", "dia": 1, "questoes": [46, 90] },
+    "CN": { "nome": "Ciencias da Natureza e suas Tecnologias", "dia": 2, "questoes": [91, 135] },
+    "MT": { "nome": "Matematica e suas Tecnologias",    "dia": 2, "questoes": [136, 180] }
+  },
+
+  "divisao_disciplinas": {
+    "LC": [
+      { "disciplina": "Lingua estrangeira", "slots_em_45": 5,  "peso": 12.5, "confianca": "edital",      "fonte": "questoes 01-05 fixadas pelo edital" },
+      { "disciplina": "Portugues",          "slots_em_45": 23, "peso": 56.8, "confianca": "catalogado",  "fonte": "159/280 candidatas 2019-2025" },
+      { "disciplina": "Literatura",         "slots_em_45": 10, "peso": 23.9, "confianca": "catalogado",  "fonte": "67/280" },
+      { "disciplina": "Artes",              "slots_em_45": 4,  "peso": 10.4, "confianca": "catalogado",  "fonte": "29/280" },
+      { "disciplina": "Educacao Fisica",    "slots_em_45": 2,  "peso": 4.3,  "confianca": "catalogado",  "fonte": "12/280" },
+      { "disciplina": "Interdisciplinar",   "slots_em_45": 1,  "peso": 4.6,  "confianca": "catalogado",  "fonte": "13/280 sobreposicao" }
+    ],
+    "CH": [
+      { "disciplina": "Geografia",  "slots_em_45": 15, "faixa": [13, 15], "peso": 32.7, "confianca": "catalogado", "fonte": "103/315 candidatas 2019-2025" },
+      { "disciplina": "Historia",   "slots_em_45": 12, "faixa": [11, 13], "peso": 26.0, "confianca": "catalogado", "fonte": "82/315" },
+      { "disciplina": "Sociologia", "slots_em_45": 10, "faixa": [9, 11],  "peso": 23.2, "confianca": "catalogado", "fonte": "73/315" },
+      { "disciplina": "Filosofia",  "slots_em_45": 8,  "faixa": [7, 9],   "peso": 18.1, "confianca": "catalogado", "fonte": "57/315" }
+    ],
+    "CN": [
+      { "disciplina": "Biologia", "slots_em_45": 15, "faixa": [14, 17], "peso": 33.3, "confianca": "provisorio", "fonte": "default 15/15/15; corpus subdetectou Quimica" },
+      { "disciplina": "Fisica",   "slots_em_45": 15, "faixa": [13, 16], "peso": 33.3, "confianca": "provisorio", "fonte": "idem" },
+      { "disciplina": "Quimica",  "slots_em_45": 15, "faixa": [13, 16], "peso": 33.3, "confianca": "provisorio", "fonte": "idem" }
+    ],
+    "MT": [
+      { "disciplina": "Matematica", "slots_em_45": 45, "peso": 100.0, "confianca": "medido", "fonte": "465/495 questoes, 11 edicoes 2015-2025" }
+    ]
+  },
+
+  "assuntos": [
+    { "id": "MT.razao_proporcao",        "area": "MT", "disciplina": "Matematica", "assunto": "Razao, proporcao e regra de tres",        "peso": 17.6, "peso_recente": 14.4, "slots_em_45": 8, "confianca": "medido", "fator_texto": 1.0, "n": 82 },
+    { "id": "MT.geometria_plana",        "area": "MT", "disciplina": "Matematica", "assunto": "Geometria plana",                          "peso": 12.3, "peso_recente": 9.5,  "slots_em_45": 6, "confianca": "medido", "fator_texto": 0.5, "n": 57, "nota": "publicado como 7% no foca100; o valor medido e 12,3%" },
+    { "id": "MT.numeros_raciocinio",     "area": "MT", "disciplina": "Matematica", "assunto": "Numeros, operacoes e raciocinio",          "peso": 12.0, "peso_recente": 14.9, "slots_em_45": 5, "confianca": "medido", "fator_texto": 1.0, "n": 56 },
+    { "id": "MT.geometria_espacial",     "area": "MT", "disciplina": "Matematica", "assunto": "Geometria espacial e volumes",             "peso": 11.2, "peso_recente": 12.9, "slots_em_45": 5, "confianca": "medido", "fator_texto": 0.6, "n": 52 },
+    { "id": "MT.funcoes",                "area": "MT", "disciplina": "Matematica", "assunto": "Funcoes",                                  "peso": 10.3, "peso_recente": 10.0, "slots_em_45": 5, "confianca": "medido", "fator_texto": 0.9, "n": 48 },
+    { "id": "MT.estatistica",            "area": "MT", "disciplina": "Matematica", "assunto": "Estatistica (media, mediana, moda)",       "peso": 7.7,  "peso_recente": 8.0,  "slots_em_45": 3, "confianca": "medido", "fator_texto": 0.9, "n": 36 },
+    { "id": "MT.graficos_tabelas",       "area": "MT", "disciplina": "Matematica", "assunto": "Leitura de graficos e tabelas",            "peso": 7.3,  "peso_recente": 9.0,  "slots_em_45": 3, "confianca": "medido", "fator_texto": 0.5, "n": 34 },
+    { "id": "MT.porcentagem",            "area": "MT", "disciplina": "Matematica", "assunto": "Porcentagem",                              "peso": 6.9,  "peso_recente": 8.5,  "slots_em_45": 3, "confianca": "medido", "fator_texto": 1.0, "n": 32 },
+    { "id": "MT.probabilidade",          "area": "MT", "disciplina": "Matematica", "assunto": "Probabilidade",                            "peso": 5.8,  "peso_recente": 5.0,  "slots_em_45": 3, "confianca": "medido", "fator_texto": 1.0, "n": 27 },
+    { "id": "MT.combinatoria",           "area": "MT", "disciplina": "Matematica", "assunto": "Analise combinatoria",                     "peso": 4.7,  "peso_recente": 5.0,  "slots_em_45": 2, "confianca": "medido", "fator_texto": 1.0, "n": 22 },
+    { "id": "MT.financeira",             "area": "MT", "disciplina": "Matematica", "assunto": "Matematica financeira",                    "peso": 1.7,  "peso_recente": 1.5,  "slots_em_45": 1, "confianca": "medido", "fator_texto": 1.0, "n": 8 },
+    { "id": "MT.sequencias",             "area": "MT", "disciplina": "Matematica", "assunto": "Sequencias e progressoes",                 "peso": 1.5,  "peso_recente": 1.0,  "slots_em_45": 1, "confianca": "medido", "fator_texto": 1.0, "n": 7 },
+    { "id": "MT.geometria_analitica",    "area": "MT", "disciplina": "Matematica", "assunto": "Geometria analitica",                      "peso": 0.9,  "peso_recente": 0.5,  "slots_em_45": 0, "confianca": "medido", "fator_texto": 0.6, "n": 4, "nota": "subtema de geometria espacial; 0 slot em 45" },
+
+    { "id": "LC.pt.interpretacao",       "area": "LC", "disciplina": "Portugues", "assunto": "Interpretacao de texto",                    "peso": 67.3, "slots_em_45": 15, "confianca": "catalogado", "fator_texto": 1.0, "n": 107 },
+    { "id": "LC.pt.variacao",            "area": "LC", "disciplina": "Portugues", "assunto": "Variacao linguistica, registro e funcoes da linguagem", "peso": 24.5, "slots_em_45": 6, "confianca": "catalogado", "fator_texto": 1.0, "n": 39 },
+    { "id": "LC.pt.gramatica",           "area": "LC", "disciplina": "Portugues", "assunto": "Coesao, coerencia e gramatica em uso",      "peso": 8.2,  "slots_em_45": 2, "confianca": "catalogado", "fator_texto": 1.0, "n": 13 },
+
+    { "id": "LC.lit.vozes_contemp",      "area": "LC", "disciplina": "Literatura", "assunto": "Literatura contemporanea: vozes plurais e testemunho", "peso": 21.5, "slots_em_45": 2, "confianca": "catalogado", "fator_texto": 0.8, "n": 14, "nota": "fator_texto < 1: autor contemporaneo nao e dominio publico" },
+    { "id": "LC.lit.ficcao_contemp",     "area": "LC", "disciplina": "Literatura", "assunto": "Literatura contemporanea: ficcao urbana e cronica",     "peso": 21.5, "slots_em_45": 2, "confianca": "catalogado", "fator_texto": 0.8, "n": 14 },
+    { "id": "LC.lit.romantismo_natural", "area": "LC", "disciplina": "Literatura", "assunto": "Romantismo, Realismo e Naturalismo",       "peso": 20.0, "slots_em_45": 2, "confianca": "catalogado", "fator_texto": 1.0, "n": 13, "nota": "dominio publico" },
+    { "id": "LC.lit.modernismo_1",       "area": "LC", "disciplina": "Literatura", "assunto": "Modernismo: ruptura e regionalismo",       "peso": 13.8, "slots_em_45": 2, "confianca": "catalogado", "fator_texto": 0.9, "n": 9 },
+    { "id": "LC.lit.fim_seculo",         "area": "LC", "disciplina": "Literatura", "assunto": "Parnasianismo, Simbolismo e Pre-Modernismo","peso": 12.3, "slots_em_45": 1, "confianca": "catalogado", "fator_texto": 1.0, "n": 8, "nota": "dominio publico" },
+    { "id": "LC.lit.modernismo_2",       "area": "LC", "disciplina": "Literatura", "assunto": "Modernismo: Geracao de 45",                "peso": 10.8, "slots_em_45": 1, "confianca": "catalogado", "fator_texto": 0.8, "n": 7 },
+
+    { "id": "LC.le.identidade",          "area": "LC", "disciplina": "Lingua estrangeira", "assunto": "Identidade, diversidade e pertencimento",        "peso": 40.0, "slots_em_45": 2, "confianca": "catalogado", "fator_texto": 1.0 },
+    { "id": "LC.le.tecnologia",          "area": "LC", "disciplina": "Lingua estrangeira", "assunto": "Tecnologia, comportamento e vida contemporanea", "peso": 40.0, "slots_em_45": 2, "confianca": "catalogado", "fator_texto": 1.0 },
+    { "id": "LC.le.critica_social",      "area": "LC", "disciplina": "Lingua estrangeira", "assunto": "Critica social, consumo e comportamento coletivo","peso": 20.0, "slots_em_45": 1, "confianca": "catalogado", "fator_texto": 1.0 },
+
+    { "id": "LC.artes.movimentos",        "area": "LC", "disciplina": "Artes",           "assunto": "Movimentos artisticos, manifestos e critica",   "peso": 60.0, "slots_em_45": 3, "confianca": "provisorio", "fator_texto": 0.4, "nota": "sem imagem, sobra texto sobre arte" },
+    { "id": "LC.artes.musica_teatro",     "area": "LC", "disciplina": "Artes",           "assunto": "Musica, teatro e artes cenicas",                "peso": 40.0, "slots_em_45": 1, "confianca": "provisorio", "fator_texto": 0.7 },
+    { "id": "LC.edfis.corpo_sociedade",   "area": "LC", "disciplina": "Educacao Fisica", "assunto": "Corpo, saude, esporte e sociedade",             "peso": 100.0, "slots_em_45": 2, "confianca": "provisorio", "fator_texto": 0.8 },
+    { "id": "LC.inter.multimodal",        "area": "LC", "disciplina": "Interdisciplinar","assunto": "Generos textuais, midia e multimodalidade",     "peso": 100.0, "slots_em_45": 1, "confianca": "catalogado", "fator_texto": 0.5 },
+
+    { "id": "CH.geo.fisica",             "area": "CH", "disciplina": "Geografia", "assunto": "Geografia Fisica",                          "peso": 23.3, "peso_recente": 12.2, "slots_em_45": 4, "confianca": "catalogado", "fator_texto": 0.5, "n": 24, "nota": "em queda: 5 das 24 em 2023-2025" },
+    { "id": "CH.geo.ambiente",           "area": "CH", "disciplina": "Geografia", "assunto": "Meio Ambiente e Mudancas Climaticas",       "peso": 18.4, "peso_recente": 31.7, "slots_em_45": 3, "confianca": "catalogado", "fator_texto": 1.0, "n": 19, "nota": "1o em tendencia recente: 13 das 19 em 2023-2025" },
+    { "id": "CH.geo.geopolitica",        "area": "CH", "disciplina": "Geografia", "assunto": "Geopolitica",                               "peso": 16.5, "slots_em_45": 2, "confianca": "catalogado", "fator_texto": 0.9, "n": 17 },
+    { "id": "CH.geo.urbana",             "area": "CH", "disciplina": "Geografia", "assunto": "Geografia Urbana",                          "peso": 16.5, "slots_em_45": 2, "confianca": "catalogado", "fator_texto": 1.0, "n": 17 },
+    { "id": "CH.geo.agraria",            "area": "CH", "disciplina": "Geografia", "assunto": "Geografia Agraria",                         "peso": 14.6, "slots_em_45": 2, "confianca": "catalogado", "fator_texto": 1.0, "n": 15 },
+    { "id": "CH.geo.populacao",          "area": "CH", "disciplina": "Geografia", "assunto": "Geografia da Populacao",                    "peso": 10.7, "slots_em_45": 2, "confianca": "catalogado", "fator_texto": 0.9, "n": 11 },
+
+    { "id": "CH.hist.colonial",          "area": "CH", "disciplina": "Historia", "assunto": "Expansao maritima, conquista da America e escravidao colonial", "peso": 26.8, "slots_em_45": 3, "confianca": "catalogado", "fator_texto": 0.8, "n": 22 },
+    { "id": "CH.hist.rep_velha_vargas",  "area": "CH", "disciplina": "Historia", "assunto": "Republica Velha, Era Vargas e Estado Novo",  "peso": 22.0, "slots_em_45": 3, "confianca": "catalogado", "fator_texto": 0.8, "n": 18 },
+    { "id": "CH.hist.antiguidade_media", "area": "CH", "disciplina": "Historia", "assunto": "Antiguidade e Idade Media",                  "peso": 15.9, "slots_em_45": 2, "confianca": "catalogado", "fator_texto": 0.9, "n": 13 },
+    { "id": "CH.hist.contemporaneo",     "area": "CH", "disciplina": "Historia", "assunto": "Mundo contemporaneo: guerras, Guerra Fria e ditadura militar", "peso": 14.6, "slots_em_45": 2, "confianca": "catalogado", "fator_texto": 0.8, "n": 12 },
+    { "id": "CH.hist.imperio",           "area": "CH", "disciplina": "Historia", "assunto": "Brasil Imperio: independencia, Segundo Reinado e abolicao",     "peso": 11.0, "slots_em_45": 1, "confianca": "catalogado", "fator_texto": 0.9, "n": 9 },
+    { "id": "CH.hist.moderna_europa",    "area": "CH", "disciplina": "Historia", "assunto": "Idade Moderna europeia: absolutismo, Iluminismo e revolucoes", "peso": 9.8,  "slots_em_45": 1, "confianca": "catalogado", "fator_texto": 0.9, "n": 8 },
+
+    { "id": "CH.soc.desigualdade",       "area": "CH", "disciplina": "Sociologia", "assunto": "Desigualdade, raca e genero",              "peso": 24.7, "slots_em_45": 3, "confianca": "catalogado", "fator_texto": 1.0, "n": 18 },
+    { "id": "CH.soc.cultura",            "area": "CH", "disciplina": "Sociologia", "assunto": "Cultura, identidade e patrimonio",         "peso": 21.9, "slots_em_45": 2, "confianca": "catalogado", "fator_texto": 0.9, "n": 16 },
+    { "id": "CH.soc.teoria",             "area": "CH", "disciplina": "Sociologia", "assunto": "Teoria social: classicos e critica contemporanea", "peso": 20.5, "slots_em_45": 2, "confianca": "catalogado", "fator_texto": 1.0, "n": 15 },
+    { "id": "CH.soc.trabalho",           "area": "CH", "disciplina": "Sociologia", "assunto": "Mundo do trabalho e reestruturacao produtiva",       "peso": 11.0, "slots_em_45": 1, "confianca": "catalogado", "fator_texto": 1.0, "n": 8 },
+    { "id": "CH.soc.movimentos",         "area": "CH", "disciplina": "Sociologia", "assunto": "Movimentos sociais, Estado e politicas publicas",    "peso": 11.0, "slots_em_45": 1, "confianca": "catalogado", "fator_texto": 1.0, "n": 8 },
+    { "id": "CH.soc.direitos_humanos",   "area": "CH", "disciplina": "Sociologia", "assunto": "Direitos humanos, migracao e minorias",    "peso": 11.0, "slots_em_45": 1, "confianca": "catalogado", "fator_texto": 1.0, "n": 8 },
+
+    { "id": "CH.fil.etica_politica_contemp", "area": "CH", "disciplina": "Filosofia", "assunto": "Etica, poder e politica na filosofia contemporanea",   "peso": 24.6, "slots_em_45": 2, "confianca": "catalogado", "fator_texto": 1.0, "n": 14 },
+    { "id": "CH.fil.fenomenologia",          "area": "CH", "disciplina": "Filosofia", "assunto": "Fenomenologia, existencialismo e epistemologia contemporaneas", "peso": 24.6, "slots_em_45": 2, "confianca": "catalogado", "fator_texto": 1.0, "n": 14 },
+    { "id": "CH.fil.antiguidade_media",      "area": "CH", "disciplina": "Filosofia", "assunto": "Antiguidade e Idade Media",                          "peso": 22.8, "slots_em_45": 2, "confianca": "catalogado", "fator_texto": 1.0, "n": 13, "nota": "dominio publico, fator_texto alto" },
+    { "id": "CH.fil.razao_moderna",          "area": "CH", "disciplina": "Filosofia", "assunto": "Razao, ciencia e conhecimento na modernidade",       "peso": 15.8, "slots_em_45": 1, "confianca": "catalogado", "fator_texto": 1.0, "n": 9 },
+    { "id": "CH.fil.etica_moderna",          "area": "CH", "disciplina": "Filosofia", "assunto": "Etica e politica na modernidade",                    "peso": 12.3, "slots_em_45": 1, "confianca": "catalogado", "fator_texto": 1.0, "n": 7 },
+
+    { "id": "CN.bio.ecologia",           "area": "CN", "disciplina": "Biologia", "assunto": "Ecologia (inclui botanica)",                 "peso": 35.7, "slots_em_45": 5, "confianca": "catalogado", "fator_texto": 1.0, "n": 35 },
+    { "id": "CN.bio.microbiologia",      "area": "CN", "disciplina": "Biologia", "assunto": "Microbiologia e saude",                      "peso": 17.3, "slots_em_45": 3, "confianca": "catalogado", "fator_texto": 1.0, "n": 17 },
+    { "id": "CN.bio.genetica",           "area": "CN", "disciplina": "Biologia", "assunto": "Genetica",                                   "peso": 16.3, "slots_em_45": 3, "confianca": "catalogado", "fator_texto": 0.7, "n": 16, "nota": "heredograma vira descricao textual" },
+    { "id": "CN.bio.fisiologia",         "area": "CN", "disciplina": "Biologia", "assunto": "Fisiologia humana",                          "peso": 15.3, "slots_em_45": 2, "confianca": "catalogado", "fator_texto": 0.9, "n": 15 },
+    { "id": "CN.bio.evolucao",           "area": "CN", "disciplina": "Biologia", "assunto": "Evolucao",                                   "peso": 8.2,  "slots_em_45": 1, "confianca": "catalogado", "fator_texto": 0.8, "n": 8, "nota": "cladograma vira descricao" },
+    { "id": "CN.bio.citologia",          "area": "CN", "disciplina": "Biologia", "assunto": "Citologia",                                  "peso": 7.1,  "slots_em_45": 1, "confianca": "catalogado", "fator_texto": 0.9, "n": 7 },
+
+    { "id": "CN.fis.eletricidade",       "area": "CN", "disciplina": "Fisica", "assunto": "Eletricidade (eletrostatica e eletrodinamica)","peso": 20.0, "slots_em_45": 3, "confianca": "provisorio", "fator_texto": 0.7 },
+    { "id": "CN.fis.cinematica_dinamica","area": "CN", "disciplina": "Fisica", "assunto": "Cinematica e dinamica",                        "peso": 20.0, "slots_em_45": 3, "confianca": "provisorio", "fator_texto": 0.8 },
+    { "id": "CN.fis.energia",            "area": "CN", "disciplina": "Fisica", "assunto": "Energia, trabalho e potencia",                 "peso": 20.0, "slots_em_45": 3, "confianca": "provisorio", "fator_texto": 1.0 },
+    { "id": "CN.fis.ondas_optica",       "area": "CN", "disciplina": "Fisica", "assunto": "Ondas e optica",                               "peso": 13.3, "slots_em_45": 2, "confianca": "provisorio", "fator_texto": 0.7 },
+    { "id": "CN.fis.termologia",         "area": "CN", "disciplina": "Fisica", "assunto": "Termologia",                                   "peso": 13.3, "slots_em_45": 2, "confianca": "provisorio", "fator_texto": 0.8 },
+    { "id": "CN.fis.estatica_hidro",     "area": "CN", "disciplina": "Fisica", "assunto": "Estatica, hidrostatica e gravitacao",          "peso": 13.3, "slots_em_45": 2, "confianca": "provisorio", "fator_texto": 0.7 },
+
+    { "id": "CN.qui.ambiental",          "area": "CN", "disciplina": "Quimica", "assunto": "Quimica ambiental",                           "peso": 20.0, "slots_em_45": 3, "confianca": "provisorio", "fator_texto": 1.0 },
+    { "id": "CN.qui.estequiometria",     "area": "CN", "disciplina": "Quimica", "assunto": "Estequiometria",                              "peso": 20.0, "slots_em_45": 3, "confianca": "provisorio", "fator_texto": 1.0 },
+    { "id": "CN.qui.organica",           "area": "CN", "disciplina": "Quimica", "assunto": "Quimica organica",                            "peso": 20.0, "slots_em_45": 3, "confianca": "provisorio", "fator_texto": 0.6, "nota": "estrutura desenhada e proibida; usar nomenclatura e formula linear" },
+    { "id": "CN.qui.funcoes_inorganicas","area": "CN", "disciplina": "Quimica", "assunto": "Funcoes inorganicas",                         "peso": 13.3, "slots_em_45": 2, "confianca": "provisorio", "fator_texto": 1.0 },
+    { "id": "CN.qui.eletroquimica",      "area": "CN", "disciplina": "Quimica", "assunto": "Eletroquimica",                               "peso": 13.3, "slots_em_45": 2, "confianca": "provisorio", "fator_texto": 0.9 },
+    { "id": "CN.qui.tabela_periodica",   "area": "CN", "disciplina": "Quimica", "assunto": "Tabela periodica e propriedades",             "peso": 6.7,  "slots_em_45": 1, "confianca": "provisorio", "fator_texto": 1.0 },
+    { "id": "CN.qui.radioatividade",     "area": "CN", "disciplina": "Quimica", "assunto": "Radioatividade",                              "peso": 6.7,  "slots_em_45": 1, "confianca": "provisorio", "fator_texto": 1.0 }
+  ]
+}

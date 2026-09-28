@@ -1,0 +1,165 @@
+{
+  "versao": "1.0.0",
+  "doc": "docs/04_ANTI_IA.md",
+  "uso": "Alimenta o no Code do agente 4 (camada de lint deterministico). Regras que exigem julgamento ficam no prompt, nao aqui.",
+
+  "regras": [
+    {
+      "id": "1.1",
+      "nome": "travessao_em_rajada",
+      "severidade": "BLOCKER",
+      "tipo": "contagem_regex",
+      "alvo": "suporte.texto",
+      "regex": "[\\u2014\\u2013]",
+      "max": 1,
+      "mensagem": "mais de 1 travessao no texto de apoio; trocar por virgula, parentese ou reestruturar"
+    },
+    {
+      "id": "1.3",
+      "nome": "transicao_de_enchimento",
+      "severidade": "BLOCKER",
+      "tipo": "regex_proibido",
+      "alvo": "suporte.texto",
+      "regex": "(^|\\n)\\s*(Al[ée]m disso|Ademais|Adicionalmente|Portanto|Dessa forma|Desse modo|Nesse sentido|Nesse contexto|Vale destacar|Vale ressaltar|[ÉE] importante notar|[ÉE] importante destacar)\\b",
+      "flags": "gim",
+      "mensagem": "transicao de enchimento abrindo paragrafo"
+    },
+    {
+      "id": "1.4",
+      "nome": "hedge_empilhado",
+      "severidade": "AVISO",
+      "tipo": "contagem_regex",
+      "alvo": "suporte.texto",
+      "regex": "\\b(possivelmente|potencialmente|aparentemente|de certa forma|em certa medida|talvez)\\b",
+      "flags": "gi",
+      "max": 2,
+      "mensagem": "empilhamento de hedge"
+    },
+    {
+      "id": "1.6",
+      "nome": "vocabulario_de_llm",
+      "severidade": "BLOCKER",
+      "tipo": "regex_proibido",
+      "alvo": "suporte.texto|enunciado|alternativas[].texto",
+      "regex": "\\b(crucial|robust[oa]s?|aprofundar|mergulhar|desvendar|panorama|cen[áa]rio atual|no mundo de hoje|em um mundo cada vez mais|primordial|hol[íi]stic[oa]|sinergia|tapeçaria|multifacetad[oa])\\b",
+      "flags": "gi",
+      "mensagem": "vocabulario caracteristico de texto gerado"
+    },
+    {
+      "id": "1.7",
+      "nome": "fechamento_moralizante",
+      "severidade": "BLOCKER",
+      "tipo": "regex_proibido",
+      "alvo": "suporte.texto",
+      "regex": "(cabe (a|à) (sociedade|todos|n[óo]s)|fica o convite|resta refletir|[ée] preciso repensar|urge (que|repensar))",
+      "flags": "gi",
+      "mensagem": "texto de apoio termina em licao de moral"
+    },
+    {
+      "id": "1.8",
+      "nome": "formatacao_indevida",
+      "severidade": "BLOCKER",
+      "tipo": "regex_proibido",
+      "alvo": "suporte.texto|enunciado",
+      "regex": "(\\*\\*|^\\s*[-*\\u2022]\\s|[\\u{1F300}-\\u{1FAFF}\\u{2600}-\\u{27BF}])",
+      "flags": "gmu",
+      "mensagem": "negrito, bullet ou emoji no corpo da questao"
+    },
+    {
+      "id": "1.9",
+      "nome": "enunciado_longo",
+      "severidade": "AVISO",
+      "tipo": "contagem_palavras",
+      "alvo": "enunciado",
+      "min": 5,
+      "max": 15,
+      "mensagem": "enunciado fora da faixa de 5 a 15 palavras"
+    },
+    {
+      "id": "2.1",
+      "nome": "correta_mais_longa",
+      "severidade": "BLOCKER",
+      "tipo": "custom",
+      "funcao": "gabaritoNaoEhMaisLongo",
+      "mensagem": "a alternativa correta e a mais longa das cinco"
+    },
+    {
+      "id": "2.2",
+      "nome": "absoluto_na_correta",
+      "severidade": "BLOCKER",
+      "tipo": "regex_proibido_em",
+      "alvo": "alternativa_correta",
+      "regex": "\\b(sempre|nunca|exclusivamente|totalmente|apenas|unicamente|integralmente|jamais|em nenhum caso)\\b",
+      "flags": "gi",
+      "mensagem": "adverbio absoluto na alternativa correta"
+    },
+    {
+      "id": "2.3",
+      "nome": "erro_nomeado_faltando",
+      "severidade": "BLOCKER",
+      "tipo": "custom",
+      "funcao": "distratorNumericoTemErroNomeado",
+      "aplica_se": { "area": ["MT", "CN"] },
+      "mensagem": "distrator numerico sem erro_nomeado; todo numero errado precisa vir de um erro de procedimento real"
+    },
+    {
+      "id": "2.6",
+      "nome": "alternativas_desbalanceadas",
+      "severidade": "AVISO",
+      "tipo": "custom",
+      "funcao": "razaoComprimentoAlternativas",
+      "limite": 1.6,
+      "mensagem": "a alternativa mais longa passa de 1,6x a mais curta"
+    },
+    {
+      "id": "2.7",
+      "nome": "alternativas_com_mesmo_inicio",
+      "severidade": "AVISO",
+      "tipo": "custom",
+      "funcao": "primeiraPalavraRepetida",
+      "mensagem": "as cinco alternativas comecam com a mesma palavra"
+    },
+    {
+      "id": "6.1",
+      "nome": "fonte_fabricada",
+      "severidade": "BLOCKER",
+      "tipo": "regex_proibido_se",
+      "alvo": "suporte.texto|suporte.fonte",
+      "condicao": { "suporte.fonte_tipo": "elaborado" },
+      "regex": "(Dispon[íi]vel em:|Acesso em:|https?://|\\b(Folha|Estad[ãa]o|G1|BBC|El Pa[íi]s|Veja|Nature|Science|IBGE|IPCC|Reuters|UOL)\\b)",
+      "flags": "gi",
+      "mensagem": "fonte fabricada em texto elaborado. Ver docs/04_ANTI_IA.md secao 6 — isto e linha vermelha"
+    },
+    {
+      "id": "8.1",
+      "nome": "rotulo_interno_vazado",
+      "severidade": "BLOCKER",
+      "tipo": "regex_proibido",
+      "alvo": "suporte.texto|enunciado|alternativas[].texto",
+      "regex": "(nivel_alvo|slot_id|BLOCKER|\\b(VOC|INF|GRM|REF|FUN|FIG)\\b|Vamos analisar|Como podemos ver|Nesta questao, o objetivo)",
+      "flags": "g",
+      "mensagem": "rotulo interno ou marca de raciocinio do agente vazou na questao"
+    }
+  ],
+
+  "enunciados_aposentados": [
+    "Analisando criticamente o excerto acima, é possível inferir que",
+    "Considerando o texto como um todo, o autor busca sobretudo",
+    "Se colocarmos os textos I e II lado a lado, o ponto em comum é que",
+    "Ao longo do texto, o autor assume a posição de que",
+    "Reduzido ao seu argumento central, o trecho afirma que",
+    "O humor da tirinha se baseia em",
+    "A crítica presente no texto consiste em"
+  ],
+
+  "cognatos_banidos_ingles": [
+    "pose", "excessive", "demonstrate", "indicate", "specific", "alternative",
+    "consequence", "initial", "investigate", "significant", "considerable",
+    "evident", "necessary", "possible", "important"
+  ],
+
+  "falsos_amigos_espanhol": [
+    "embarazada", "ratón", "largo", "éxito", "todavía", "aula", "vaso",
+    "rato", "cena", "carpeta", "apellido", "salada", "oficina", "pelo"
+  ]
+}
