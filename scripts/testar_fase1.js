@@ -45,6 +45,16 @@ caso('sem a trava, oficial vira 180 nas 4 areas', () => {
   const s = normalizarSpec({ tipo: 'oficial' }, { fase1: false });
   afirma(s.n_questoes === 180 && s.areas.length === 4, JSON.stringify(s));
 });
+caso('pedido embrulhado pela ferramenta do agente e lido (query objeto, query texto, input)', () => {
+  const pedido = { tipo: 'personalizado', areas: ['MT'], n_questoes: 5 };
+  for (const e of [{ query: pedido }, { query: JSON.stringify(pedido) }, { input: { query: '```json\n' + JSON.stringify(pedido) + '\n```' } }]) {
+    const s = normalizarSpec(e);
+    afirma(s.tipo === 'personalizado' && s.n_questoes === 5, JSON.stringify(e));
+  }
+});
+caso('sem tipo, o erro lista os campos que chegaram', () => {
+  lanca(() => normalizarSpec({ query: 'quero 5 de matematica', sessionId: 'x' }), 'Campos recebidos: query, sessionId');
+});
 caso('valor invalido e rejeitado, nao ignorado', () => {
   lanca(() => normalizarSpec({ tipo: 'personalizado', areas: ['MT'], n_questoes: 5, nivel: 'impossivel' }), 'nivel invalido');
   lanca(() => normalizarSpec({ tipo: 'qualquer' }), 'tipo invalido');

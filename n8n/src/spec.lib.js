@@ -22,8 +22,29 @@ function lista(v) {
   return s.split(/[,;]/).map(x => x.trim()).filter(Boolean);
 }
 
+// A ferramenta do agente entrega os campos em formatos diferentes conforme a versao do
+// n8n: soltos no item, dentro de "query" (objeto ou texto JSON), ou em "input"/"arguments".
+function desembrulharEntrada(v, profundidade = 0) {
+  if (typeof v === 'string') {
+    const s = v.trim().replace(/^```(json)?/i, '').replace(/```$/, '').trim();
+    if (s.startsWith('{')) { try { return desembrulharEntrada(JSON.parse(s), profundidade + 1); } catch { /* segue */ } }
+    return null;
+  }
+  if (!v || typeof v !== 'object' || profundidade > 3) return null;
+  if ('tipo' in v) return v;
+  for (const k of ['query', 'input', 'arguments', 'args', 'body', 'spec', 'json', 'data']) {
+    const achado = desembrulharEntrada(v[k], profundidade + 1);
+    if (achado) return achado;
+  }
+  return null;
+}
+
 function normalizarSpec(entrada, ctx = {}) {
-  const e = entrada ?? {};
+  const e = desembrulharEntrada(entrada);
+  if (!e) {
+    const chaves = entrada && typeof entrada === 'object' ? Object.keys(entrada).join(', ') : typeof entrada;
+    throw new Error(`pedido sem o campo "tipo" (oficial ou personalizado). Campos recebidos: ${chaves || 'nenhum'}.`);
+  }
   const assumido = lista(e.assumido);
   const spec = { origem: ctx.origem ?? e.origem ?? 'chat', aluno_id: e.aluno_id ?? null };
 
