@@ -1,0 +1,86 @@
+{
+  "name": "98-teste-erro",
+  "nodes": [
+    {
+      "id": "3f01de62-872c-4c80-ad07-2448e4f6552d",
+      "name": "Webhook de teste",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {
+        "httpMethod": "GET",
+        "path": "simulado-teste-erro",
+        "responseMode": "onReceived",
+        "options": {}
+      },
+      "webhookId": "a9bdafe0-8164-440d-9537-739e914b9b4c"
+    },
+    {
+      "id": "c72174c9-3e82-40f9-b0a2-faef0ce85241",
+      "name": "Criar job de teste",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        240,
+        0
+      ],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "-- Cria um job de teste amarrado a esta execucao, como o orquestrador fara.\ninsert into public.jobs (origem, status, execucao_id, spec)\nvalues ('webhook', 'gerando', $1, '{\"teste\": \"98-teste-erro\"}'::jsonb)\nreturning id;",
+        "options": {
+          "queryReplacement": "={{ $execution.id }}"
+        }
+      },
+      "credentials": {
+        "postgres": {
+          "id": "",
+          "name": "Supabase Postgres"
+        }
+      }
+    },
+    {
+      "id": "a3ad99e6-d32d-4e8f-858f-75ce13f9060d",
+      "name": "Falhar de proposito",
+      "type": "n8n-nodes-base.stopAndError",
+      "typeVersion": 1,
+      "position": [
+        480,
+        0
+      ],
+      "parameters": {
+        "errorMessage": "=Erro proposital de teste. job_id {{ $json.id }}"
+      }
+    }
+  ],
+  "connections": {
+    "Webhook de teste": {
+      "main": [
+        [
+          {
+            "node": "Criar job de teste",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Criar job de teste": {
+      "main": [
+        [
+          {
+            "node": "Falhar de proposito",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "pinData": {}
+}

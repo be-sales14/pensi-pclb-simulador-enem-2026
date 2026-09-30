@@ -117,8 +117,16 @@ e não vale nada.
 - `job_id` é gerado no `01-entrada-webhook` e é a chave de tudo.
 - Cada questão gravada carrega `(job_id, slot_id, versao)` como chave única. Reexecutar o
   orquestrador não duplica: `upsert`.
-- O `99-erro` (Error Trigger) marca o job como `erro` com o `slot_id` que quebrou, para
-  poder retomar de onde parou em vez de gerar 180 de novo.
+- O `99-erro` (Error Trigger) marca o job como `erro` e grava o erro em `erros_execucao`,
+  para poder retomar de onde parou em vez de gerar 180 de novo.
+- **O Error Trigger sabe qual execução quebrou, não qual job.** Por isso o
+  `02-orquestrador` grava `jobs.execucao_id = {{ $execution.id }}` como primeiro passo.
+  Sem isso, o `99-erro` loga o erro mas não consegue marcar o job.
+- Para retomar, os slots que faltam são os do blueprint sem versão `APROVADO` em
+  `questao_versoes` — não precisa guardar o `slot_id` no erro.
+- Todo workflow do projeto aponta para o `99-erro` em **Settings → Error workflow**.
+- **Erro workflow não dispara em execução manual** ("Test workflow"). Para testar, use
+  uma execução de produção — é para isso que existe o `98-teste-erro`.
 
 ---
 

@@ -1,0 +1,80 @@
+{
+  "name": "99-erro",
+  "nodes": [
+    {
+      "id": "ab24a1d4-a7f0-4bc5-b18a-90874ee872a6",
+      "name": "Quando um workflow falhar",
+      "type": "n8n-nodes-base.errorTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "0d365722-5f35-4923-8caa-74034662ca09",
+      "name": "Normalizar erro",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        240,
+        0
+      ],
+      "parameters": {
+        "jsCode": "// O Error Trigger manda dois formatos:\n//  - erro num no qualquer: { execution: { id, url, error, lastNodeExecuted, mode }, workflow }\n//  - erro no proprio gatilho: { trigger: { error, mode }, workflow }\nconst d = $input.first().json;\nconst ex = d.execution ?? {};\nconst erro = ex.error ?? d.trigger?.error ?? {};\nconst corta = (s, n) => (s == null ? null : String(s).slice(0, n));\n\nlet mensagem = erro.message ?? 'erro sem mensagem';\nif (erro.description) mensagem += ' | ' + erro.description;\n\nreturn [{\n  json: {\n    execucao_id:   ex.id != null ? String(ex.id) : null,\n    execucao_url:  ex.url ?? null,\n    workflow_id:   d.workflow?.id ?? null,\n    workflow_nome: d.workflow?.name ?? null,\n    no_com_erro:   ex.lastNodeExecuted ?? erro.node?.name ?? null,\n    mensagem:      corta(mensagem, 2000),\n    stack:         corta(erro.stack, 4000),\n    modo:          ex.mode ?? d.trigger?.mode ?? null,\n  },\n}];"
+      }
+    },
+    {
+      "id": "e2938a61-4c71-4c23-a6cf-d9c5da9646bf",
+      "name": "Gravar erro e marcar job",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        480,
+        0
+      ],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "-- Marca o job como erro (se houver job desta execucao) e grava o log. Tudo numa query.\nwith e as (select $1::jsonb as j),\njob as (\n  update public.jobs\n     set status = 'erro',\n         erro = (select jsonb_build_object('workflow', j->>'workflow_nome', 'no', j->>'no_com_erro',\n                                           'mensagem', j->>'mensagem', 'execucao_url', j->>'execucao_url',\n                                           'em', now()) from e),\n         atualizado_em = now()\n   where execucao_id = (select j->>'execucao_id' from e)\n     and status not in ('pronto', 'erro')\n  returning id\n)\ninsert into public.erros_execucao\n  (execucao_id, execucao_url, workflow_id, workflow_nome, no_com_erro, mensagem, stack, modo, job_id)\nselect j->>'execucao_id', j->>'execucao_url', j->>'workflow_id', j->>'workflow_nome',\n       j->>'no_com_erro', j->>'mensagem', j->>'stack', j->>'modo', (select id from job limit 1)\nfrom e\nreturning id, job_id;",
+        "options": {
+          "queryReplacement": "={{ JSON.stringify($json) }}"
+        }
+      },
+      "credentials": {
+        "postgres": {
+          "id": "",
+          "name": "Supabase Postgres"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Quando um workflow falhar": {
+      "main": [
+        [
+          {
+            "node": "Normalizar erro",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalizar erro": {
+      "main": [
+        [
+          {
+            "node": "Gravar erro e marcar job",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "pinData": {}
+}

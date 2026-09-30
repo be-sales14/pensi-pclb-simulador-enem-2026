@@ -17,6 +17,7 @@ Migration em [`../sql/001_init.sql`](../sql/001_init.sql).
 | `auditorias` | Todo veredito de todo agente sobre toda versão |
 | `simulado_questoes` | Ligação N-N com o número da questão no simulado |
 | `respostas` | Resposta de aluno, para análise clássica de item |
+| `erros_execucao` | Todo erro de workflow do n8n, gravado pelo `99-erro`. Migration `002` |
 
 Duas decisões que valem explicar:
 

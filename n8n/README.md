@@ -5,6 +5,7 @@ Um arquivo `.json` por workflow, exportado do n8n (`... > Download`).
 | Arquivo | Workflow | Fase |
 |---|---|---|
 | `99-erro.json` | Error Trigger — log e marca o job como `erro` | 0 |
+| `98-teste-erro.json` | Falha de propósito para testar o `99-erro`. Desativar depois do teste | 0 |
 | `00-entrada-chat.json` | Chat Trigger + agente 0 | 1 |
 | `02-orquestrador.json` | Distribuição, loop, agregação, montagem | 1 |
 | `10-gerador-mt.json` | Gerador de Matemática | 1 |
