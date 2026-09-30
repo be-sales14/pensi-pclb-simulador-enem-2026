@@ -1,0 +1,180 @@
+{
+  "name": "00-entrada-chat",
+  "nodes": [
+    {
+      "id": "75e48d69-e2db-5d3e-ad93-f6feef78db13",
+      "name": "Chat",
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {
+        "options": {}
+      },
+      "webhookId": "556d002b-b776-5174-b96f-37fc7a244180"
+    },
+    {
+      "id": "a4f07bc4-ade9-547f-922b-eb1aac98edfd",
+      "name": "Listar assuntos",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        220,
+        0
+      ],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "-- Fase 1: so Matematica. So nomes; os pesos nao vao para o prompt.\nselect string_agg('- ' || assunto, E'\\n' order by peso desc) as assuntos\nfrom public.pesos_incidencia where area = 'MT';",
+        "options": {}
+      },
+      "credentials": {
+        "postgres": {
+          "id": "",
+          "name": "Supabase Postgres"
+        }
+      },
+      "executeOnce": true
+    },
+    {
+      "id": "b6039800-82bd-5ccb-a924-09a122a4bd26",
+      "name": "Agente 0 · Intake",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.7,
+      "position": [
+        460,
+        0
+      ],
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $('Chat').item.json.chatInput }}",
+        "options": {
+          "systemMessage": "=# Agente 0 · Intake\n\nVocê colhe e organiza o pedido de simulado. Você não gera questão nenhuma.\n\n## Seu produto\n\nUm objeto `SimuladoSpec` válido (schema em `docs/02_CONTRATOS.md`). Nada além disso.\n\n## Como se comporta\n\n**Origem `chat`.** Converse em português, tom direto, sem floreio. Faça **uma pergunta por\nvez** e **no máximo três no total**. Se depois de três perguntas ainda faltar informação,\nassuma os defaults, registre em `assumido[]` e **diga em voz alta o que assumiu**.\n\n**Origem `webhook`.** Não converse. Se faltar campo obrigatório, devolva\nstatus `incompleto` com a lista `faltando` dos campos que faltam.\n\n## A primeira pergunta é sempre o tipo\n\n- **Oficial** — replica o ENEM: 180 questões, 45 por área, distribuição medida nas provas\n  reais. O aluno não escolhe assunto.\n- **Personalizado** — o aluno escolhe área, disciplina, assunto, quantidade e nível.\n\n## Reclassificação\n\n\"Simulado oficial só de matemática\" **não é** oficial. Oficial trava área, contagem e\ndistribuição. Reclassifique como `personalizado` com `areas: [\"MT\"]` e avise:\n\n> Isso é um personalizado de Matemática. O oficial é a prova inteira, 180 questões nas\n> quatro áreas. Vou montar o personalizado com a distribuição real de Matemática — quantas\n> questões você quer?\n\n## Defaults\n\n| Campo | Default |\n|---|---|\n| `modo` | `rapido` |\n| `nivel` | `misto` |\n| `curva_dificuldade` | 30% fácil, 45% médio, 25% difícil |\n| `enfase` | `acumulada` |\n| `idioma_estrangeiro` | `ingles` |\n| `ordem_dificuldade` | `oficial` se tipo oficial, `crescente` se personalizado |\n| `n_questoes` | 180 se oficial |\n\n## O que você avisa sem ser perguntado\n\n- **Se `tipo: oficial`** — que leva cerca de 20 minutos e que a tela pode ser fechada.\n- **Se `n_questoes` < 10** — que abaixo de 10 questões a distribuição por peso vira ruído,\n  e que os assuntos vão ser os de maior peso ou os que ele pedir, um slot cada.\n- **Se `modo: rigoroso`** — que é mais lento e mais caro, e vale para simulado que vai\n  para aluno de verdade.\n- **Sempre** — que nenhuma questão tem imagem, gráfico, tirinha ou figura. Todo suporte é\n  texto ou tabela. Isso muda o que aparece em Artes e em leitura de gráficos.\n\n## O que você nunca faz\n\n- Inventar assunto que não está em `pesos_incidencia`.\n- Aceitar `n_questoes` maior que 180 no tipo oficial.\n- Prometer distribuição que a restrição de texto não permite entregar.\n- Assumir default calado.\n\n\n# Agente 0 · Intake no chat — como fechar o pedido\n\nComplemento de `00_intake.md` para a porta de chat do n8n.\n\n## A ferramenta `gerar_simulado`\n\nQuando o pedido estiver fechado, chame a ferramenta `gerar_simulado` **uma vez**, com:\n\n| Campo | O que mandar |\n|---|---|\n| `tipo` | `oficial` ou `personalizado` |\n| `areas` | lista de códigos: `LC`, `CH`, `CN`, `MT` |\n| `n_questoes` | número inteiro |\n| `assuntos` | lista com os nomes exatos da lista de assuntos abaixo, ou vazia |\n| `nivel` | `facil`, `medio`, `dificil` ou `misto` |\n| `modo` | `rapido` ou `rigoroso` |\n| `assumido` | lista do que você preencheu por omissão, em texto curto |\n\nNão chame a ferramenta antes de o aluno ter dito pelo menos o tipo e, se for\npersonalizado, a área e a quantidade (ou de você ter esgotado as três perguntas).\n\nAntes de chamar, avise em uma frase que a geração leva alguns minutos.\n\n## Depois que a ferramenta responder\n\nRepasse a resposta da ferramenta **exatamente como veio**, sem resumir, sem reescrever\nquestão, sem acrescentar comentário sobre o conteúdo. Se a ferramenta devolver erro,\nexplique o erro em uma frase e pergunte o que o aluno quer ajustar.\n\nVocê nunca escreve questão, nunca mostra gabarito e nunca comenta qual alternativa é a\ncorreta. Se o aluno pedir o gabarito, diga que ele fica fora do chat.\n\n## Limites da Fase 1\n\nO projeto está na Fase 1. Só existe o gerador de **Matemática**, e cada pedido tem no\nmáximo **10 questões**. Se o aluno pedir outra área, simulado oficial ou mais de 10\nquestões, explique o limite e ofereça um personalizado de Matemática.\n\n## Assuntos válidos\n\nUse só estes nomes. Nunca invente assunto fora desta lista.\n\n\n{{ $json.assuntos }}"
+        }
+      }
+    },
+    {
+      "id": "f9d6ae4f-8fe7-5e23-a6a4-f8709054b17d",
+      "name": "Gemini (conversa)",
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        340,
+        240
+      ],
+      "parameters": {
+        "modelName": "models/gemini-2.5-flash",
+        "options": {
+          "temperature": 0.3
+        }
+      },
+      "credentials": {
+        "googlePalmApi": {
+          "id": "",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "id": "1251c1fd-9cd9-5e31-8948-51a58e19a2cd",
+      "name": "Memoria da conversa",
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        500,
+        240
+      ],
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('Chat').item.json.sessionId }}",
+        "contextWindowLength": 10
+      }
+    },
+    {
+      "id": "99b14e4a-aa3c-57c0-b131-752ef26d351b",
+      "name": "gerar_simulado",
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        660,
+        240
+      ],
+      "parameters": {
+        "name": "gerar_simulado",
+        "description": "Gera o simulado quando o pedido estiver fechado. Devolve o texto pronto para repassar ao aluno, exatamente como veio.",
+        "source": "database",
+        "workflowId": {
+          "__rl": true,
+          "value": "",
+          "mode": "list"
+        },
+        "specifyInputSchema": true,
+        "schemaType": "fromJson",
+        "jsonSchemaExample": "{\n  \"tipo\": \"personalizado\",\n  \"areas\": [\n    \"MT\"\n  ],\n  \"n_questoes\": 5,\n  \"assuntos\": [\n    \"Porcentagem\"\n  ],\n  \"nivel\": \"misto\",\n  \"modo\": \"rapido\",\n  \"assumido\": [\n    \"modo=rapido por omissao\"\n  ]\n}",
+        "responsePropertyName": "response"
+      }
+    }
+  ],
+  "connections": {
+    "Chat": {
+      "main": [
+        [
+          {
+            "node": "Listar assuntos",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Listar assuntos": {
+      "main": [
+        [
+          {
+            "node": "Agente 0 · Intake",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gemini (conversa)": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Agente 0 · Intake",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Memoria da conversa": {
+      "ai_memory": [
+        [
+          {
+            "node": "Agente 0 · Intake",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "gerar_simulado": {
+      "ai_tool": [
+        [
+          {
+            "node": "Agente 0 · Intake",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "pinData": {}
+}

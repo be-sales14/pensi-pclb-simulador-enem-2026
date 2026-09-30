@@ -2,7 +2,7 @@
   "name": "98-teste-erro",
   "nodes": [
     {
-      "id": "3f01de62-872c-4c80-ad07-2448e4f6552d",
+      "id": "ec7a18ef-d529-52eb-8f96-49079b72c5bc",
       "name": "Webhook de teste",
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2,
@@ -19,7 +19,7 @@
       "webhookId": "a9bdafe0-8164-440d-9537-739e914b9b4c"
     },
     {
-      "id": "c72174c9-3e82-40f9-b0a2-faef0ce85241",
+      "id": "4a249c29-d97c-5606-b682-881bd39a2f20",
       "name": "Criar job de teste",
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.5,
@@ -42,7 +42,7 @@
       }
     },
     {
-      "id": "a3ad99e6-d32d-4e8f-858f-75ce13f9060d",
+      "id": "d5a61593-8555-5ead-8cb2-14584ded3566",
       "name": "Falhar de proposito",
       "type": "n8n-nodes-base.stopAndError",
       "typeVersion": 1,

@@ -8,7 +8,7 @@ Sem figura, sem gráfico, sem desenho. Você tem duas ferramentas:
 
 - **Texto.** A figura geométrica descrita em palavras — e a descrição tem que ser
   suficiente e não pode virar charada. Se a questão só funciona vendo a figura, ela não
-  serve; devolva `{ "inviavel": true, "motivo": "..." }` e o slot é redistribuído.
+  serve; devolva `inviavel: true` com o `motivo`, e o slot é redistribuído.
 - **Tabela em Markdown.** Para dados, estatística, leitura de informação quantitativa.
 
 ## Como monta a questão

@@ -2,7 +2,7 @@
   "name": "99-erro",
   "nodes": [
     {
-      "id": "ab24a1d4-a7f0-4bc5-b18a-90874ee872a6",
+      "id": "ed03fb31-0afb-52db-868a-6272097d3aaf",
       "name": "Quando um workflow falhar",
       "type": "n8n-nodes-base.errorTrigger",
       "typeVersion": 1,
@@ -13,7 +13,7 @@
       "parameters": {}
     },
     {
-      "id": "0d365722-5f35-4923-8caa-74034662ca09",
+      "id": "a5b859c8-001e-5d33-bbfb-58aaf7768180",
       "name": "Normalizar erro",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -26,7 +26,7 @@
       }
     },
     {
-      "id": "e2938a61-4c71-4c23-a6cf-d9c5da9646bf",
+      "id": "93743698-9b39-5459-8804-aaea94b40d35",
       "name": "Gravar erro e marcar job",
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.5,

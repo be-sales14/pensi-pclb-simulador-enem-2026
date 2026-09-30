@@ -1,0 +1,433 @@
+{
+  "name": "02-orquestrador",
+  "nodes": [
+    {
+      "id": "83099856-3357-51ae-93bb-45382d2f372a",
+      "name": "Receber pedido",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "fa4a477b-2e69-5910-a9ed-73668a2b74c0",
+      "name": "Normalizar spec",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        220,
+        0
+      ],
+      "parameters": {
+        "jsCode": "// Normaliza o pedido que chega do agente 0 (ou do webhook) num SimuladoSpec completo.\n// Ver docs/02_CONTRATOS.md (SimuladoSpec) e docs/01_ARQUITETURA_AGENTES.md (defaults).\n// Fonte do no Code \"Normalizar spec\" do 02-orquestrador.\n\n// Fase 1: so existe o gerador de Matematica, e o chat espera a geracao terminar.\n// Tirar estas travas quando os outros geradores e o modo assincrono existirem.\nconst FASE_1 = { areas: ['MT'], max_questoes: 10 };\n\nconst NOMES_AREA = {\n  lc: 'LC', linguagens: 'LC', ch: 'CH', humanas: 'CH', 'ciencias humanas': 'CH',\n  cn: 'CN', natureza: 'CN', 'ciencias da natureza': 'CN', mt: 'MT', matematica: 'MT',\n};\n\nconst semAcento = s => String(s).normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim();\n\n// O LLM as vezes manda lista como texto: \"MT, CH\" ou '[\"MT\"]'.\nfunction lista(v) {\n  if (v == null || v === '') return [];\n  if (Array.isArray(v)) return v.map(String).map(s => s.trim()).filter(Boolean);\n  const s = String(v).trim();\n  if (s.startsWith('[')) { try { return lista(JSON.parse(s)); } catch { /* segue */ } }\n  return s.split(/[,;]/).map(x => x.trim()).filter(Boolean);\n}\n\nfunction normalizarSpec(entrada, ctx = {}) {\n  const e = entrada ?? {};\n  const assumido = lista(e.assumido);\n  const spec = { origem: ctx.origem ?? e.origem ?? 'chat', aluno_id: e.aluno_id ?? null };\n\n  const tipo = semAcento(e.tipo ?? '');\n  if (!['oficial', 'personalizado'].includes(tipo))\n    throw new Error(`tipo invalido: \"${e.tipo}\". Use \"oficial\" ou \"personalizado\".`);\n  spec.tipo = tipo;\n\n  const areas = [...new Set(lista(e.areas).map(a => NOMES_AREA[semAcento(a)] ?? a.toUpperCase()))];\n  const invalidas = areas.filter(a => !['LC', 'CH', 'CN', 'MT'].includes(a));\n  if (invalidas.length) throw new Error(`area invalida: ${invalidas.join(', ')}`);\n\n  // Oficial trava area, contagem e distribuicao. Oficial de uma area so e personalizado.\n  if (spec.tipo === 'oficial' && areas.length > 0 && areas.length < 4) {\n    spec.tipo = 'personalizado';\n    assumido.push('reclassificado de oficial para personalizado: oficial e a prova inteira');\n  }\n  if (spec.tipo === 'oficial') {\n    spec.areas = ['LC', 'CH', 'CN', 'MT'];\n    spec.n_questoes = 180;\n  } else {\n    if (areas.length === 0) throw new Error('personalizado sem area');\n    spec.areas = areas;\n    const n = Number(e.n_questoes);\n    if (!Number.isInteger(n) || n < 1 || n > 180)\n      throw new Error(`n_questoes invalido: \"${e.n_questoes}\" (1 a 180)`);\n    spec.n_questoes = n;\n  }\n  spec.disciplinas = spec.tipo === 'oficial' ? [] : lista(e.disciplinas);\n  spec.assuntos = spec.tipo === 'oficial' ? [] : lista(e.assuntos);\n\n  const padrao = (campo, valido, valor, texto) => {\n    const v = e[campo] == null || e[campo] === '' ? null : semAcento(e[campo]);\n    if (v != null && !valido.includes(v)) throw new Error(`${campo} invalido: \"${e[campo]}\"`);\n    if (v == null) {\n      if (!assumido.some(a => a.startsWith(`${campo}=`))) assumido.push(`${campo}=${valor} ${texto}`);\n      return valor;\n    }\n    return v;\n  };\n  spec.modo = padrao('modo', ['rapido', 'rigoroso'], 'rapido', 'por omissao');\n  spec.nivel = padrao('nivel', ['facil', 'medio', 'dificil', 'misto'], 'misto', 'por omissao');\n  spec.enfase = padrao('enfase', ['acumulada', 'recente'], 'acumulada', 'por omissao');\n  spec.idioma_estrangeiro = spec.areas.includes('LC')\n    ? padrao('idioma_estrangeiro', ['ingles', 'espanhol'], 'ingles', 'por omissao') : null;\n  spec.ordem_dificuldade = spec.tipo === 'oficial' ? 'oficial' : 'crescente';\n  spec.curva_dificuldade = e.curva_dificuldade ?? { facil: 0.30, medio: 0.45, dificil: 0.25 };\n  spec.assumido = assumido;\n  spec.criado_em = ctx.agora ?? new Date().toISOString();\n\n  if (ctx.fase1 !== false) {\n    const fora = spec.areas.filter(a => !FASE_1.areas.includes(a));\n    if (fora.length)\n      throw new Error(`Na Fase 1 so existe o gerador de Matematica (MT). Pedido incluiu: ${fora.join(', ')}.`);\n    if (spec.n_questoes > FASE_1.max_questoes)\n      throw new Error(`Na Fase 1 o limite e ${FASE_1.max_questoes} questoes por pedido (o chat espera a geracao terminar). Pedido: ${spec.n_questoes}.`);\n  }\n  return spec;\n}\n\n// ---------------------------------------------- n8n\nconst e = $input.first().json;\nconst spec = normalizarSpec(e, { origem: e.origem ?? 'chat' });\n// execucao_id: e como o 99-erro acha este job se algo quebrar (docs/07 §7).\nreturn [{ json: { origem: spec.origem, spec, execucao_id: String($execution.id) } }];"
+      }
+    },
+    {
+      "id": "abc51689-66a9-5c7c-ad86-7608c3f97794",
+      "name": "Criar job",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        440,
+        0
+      ],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "insert into public.jobs (origem, status, spec, execucao_id)\nselect j->>'origem', 'distribuindo', j->'spec', j->>'execucao_id' from (select $1::jsonb as j) x\nreturning id;",
+        "options": {
+          "queryReplacement": "={{ JSON.stringify($json) }}"
+        }
+      },
+      "credentials": {
+        "postgres": {
+          "id": "",
+          "name": "Supabase Postgres"
+        }
+      }
+    },
+    {
+      "id": "1d30c280-6dd0-5497-923d-19ffb8e1eeab",
+      "name": "Ler pesos",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        660,
+        0
+      ],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "-- Pesos vivem no banco, nunca no codigo (CLAUDE.md).\nselect (select json_agg(d) from public.pesos_disciplina d) as disciplinas,\n       (select json_agg(i) from public.pesos_incidencia i) as assuntos;",
+        "options": {}
+      },
+      "credentials": {
+        "postgres": {
+          "id": "",
+          "name": "Supabase Postgres"
+        }
+      },
+      "executeOnce": true
+    },
+    {
+      "id": "0534b0aa-a674-57b6-b9e0-df6e0971331f",
+      "name": "Rateio",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        880,
+        0
+      ],
+      "parameters": {
+        "jsCode": "// Agente 1 · Distribuidor, camadas 1 e 2 (rateio e viabilidade textual). Zero LLM.\n// Ver docs/03_DISTRIBUICAO_ENEM.md §7 e §8 e docs/05_RUBRICA_DIFICULDADE.md.\n//\n// Este arquivo e a fonte do no Code \"Rateio\" do 02-orquestrador. Nao edite o codigo\n// dentro do n8n: edite aqui, rode `node scripts/testar_distribuidor.js` e regenere o\n// workflow com `python3 scripts/montar_workflows.py`.\n\nconst AREAS = ['LC', 'CH', 'CN', 'MT'];\nconst INICIO_OFICIAL = { LC: 1, CH: 46, CN: 91, MT: 136 };\nconst NIVEL_ALVO = { facil: 2, medio: 5, dificil: 8 }; // centro de cada faixa da rubrica\nconst CURVA_PADRAO = { facil: 0.30, medio: 0.45, dificil: 0.25 };\nconst PISO_PESO = 5;       // assunto com >= 5% da area nunca fica com 0 slot...\nconst PISO_N_MINIMO = 20;  // ...em area com 20+ questoes\nconst N_PEQUENO = 10;      // abaixo disso, rateio por peso vira ruido\n\n// Maior resto (Hare). Fecha a conta exata; desempate estavel por resto, peso e id.\nfunction ratear(itens, total) {\n  if (itens.length === 0 || total === 0) return itens.map(p => ({ ...p, slots: 0 }));\n  const soma = itens.reduce((s, p) => s + p.peso, 0);\n  if (!(soma > 0)) throw new Error(`ratear: soma de pesos ${soma} para ${total} slots`);\n  const base = itens.map(p => {\n    const ideal = (p.peso / soma) * total;\n    return { ...p, ideal, slots: Math.floor(ideal) };\n  });\n  const resto = p => Math.round((p.ideal - Math.floor(p.ideal)) * 1e9) / 1e9;\n  const ordem = [...base].sort((a, b) =>\n    resto(b) - resto(a) || b.peso - a.peso || String(a.id).localeCompare(String(b.id)));\n  let faltam = total - base.reduce((s, p) => s + p.slots, 0);\n  for (let i = 0; faltam > 0; i = (i + 1) % ordem.length, faltam--) ordem[i].slots += 1;\n  return base;\n}\n\n// PRNG com semente: o mesmo spec sempre gera o mesmo blueprint.\nfunction prng(semente) {\n  let h = 2166136261;\n  for (const c of String(semente)) h = Math.imul(h ^ c.charCodeAt(0), 16777619);\n  return () => {\n    h = (h + 0x6D2B79F5) | 0;\n    let t = Math.imul(h ^ (h >>> 15), 1 | h);\n    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;\n    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;\n  };\n}\n\nconst normalizar = s => String(s).normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim();\n\n// Niveis de um assunto com k slots, pela curva (rubrica, secao \"Curva-alvo\").\nfunction niveis(k, spec, rnd) {\n  if (spec.nivel && spec.nivel !== 'misto') return Array(k).fill(spec.nivel);\n  const curva = spec.curva_dificuldade ?? CURVA_PADRAO;\n  const rotulos = ['facil', 'medio', 'dificil'];\n  const dominante = rotulos.reduce((a, b) => (curva[b] > curva[a] ? b : a));\n  if (k === 1) return [dominante];\n  if (k === 2) {\n    const outros = rotulos.filter(r => r !== dominante);\n    const soma = outros.reduce((s, r) => s + curva[r], 0);\n    return [dominante, rnd() * soma < curva[outros[0]] ? outros[0] : outros[1]];\n  }\n  return ratear(rotulos.map(r => ({ id: r, peso: curva[r] })), k)\n    .flatMap(r => Array(r.slots).fill(r.id));\n}\n\n// Rateio de uma area em dois niveis: area -> disciplina -> assunto.\n// comTexto=false da o ALVO (distribuicao real); comTexto=true da o ENTREGUE (so texto).\nfunction ratearArea(total, discs, assuntosPorDisc, oficial, comTexto) {\n  const fatorMedio = d => {\n    const as = assuntosPorDisc[d.disciplina];\n    const soma = as.reduce((s, a) => s + a.pesoBase, 0);\n    return soma > 0 ? as.reduce((s, a) => s + a.pesoBase * a.fator, 0) / soma : 1;\n  };\n  // Lingua estrangeira e fixada pelo edital: nao encolhe com fator_texto.\n  const fixas = discs.filter(d => d.confianca === 'edital' && oficial);\n  const livres = discs.filter(d => !fixas.includes(d));\n  const totalLivre = total - fixas.reduce((s, d) => s + d.slots_em_45, 0);\n  const porDisc = [\n    ...fixas.map(d => ({ ...d, slots: d.slots_em_45 })),\n    ...ratear(livres.map(d => ({\n      ...d, id: d.disciplina,\n      peso: d.slots_em_45 * (comTexto ? fatorMedio(d) : 1),\n    })), totalLivre),\n  ];\n  return porDisc.flatMap(d => {\n    const fixa = d.confianca === 'edital' && oficial;\n    return ratear(assuntosPorDisc[d.disciplina].map(a => ({\n      ...a, peso: a.pesoBase * (comTexto && !fixa ? a.fator : 1),\n    })), d.slots);\n  });\n}\n\nfunction distribuir(spec, pesosDisciplina, pesosIncidencia) {\n  const oficial = spec.tipo === 'oficial';\n  const n = oficial ? 180 : Number(spec.n_questoes);\n  if (!oficial && !(Number.isInteger(n) && n >= 1 && n <= 180))\n    throw new Error(`n_questoes invalido: ${spec.n_questoes} (1 a 180)`);\n  const areas = oficial ? AREAS : AREAS.filter(a => (spec.areas ?? []).includes(a));\n  if (areas.length === 0) throw new Error('nenhuma area valida no spec');\n\n  // Filtros do personalizado. Assunto aceita id ('MT.funcoes') ou nome, sem acento.\n  const filtroDisc = new Set((oficial ? [] : spec.disciplinas ?? []).map(normalizar));\n  const filtroAss = new Set((oficial ? [] : spec.assuntos ?? []).map(normalizar));\n  const conhecidos = new Set(pesosIncidencia.flatMap(a => [normalizar(a.id), normalizar(a.assunto)]));\n  const desconhecidos = [...filtroAss].filter(x => !conhecidos.has(x));\n  if (desconhecidos.length) throw new Error(`assunto fora de pesos_incidencia: ${desconhecidos.join(', ')}`);\n\n  const pesoDe = a => Number(!oficial && spec.enfase === 'recente' && a.peso_recente != null\n    ? a.peso_recente : a.peso);\n\n  const totaisArea = oficial\n    ? Object.fromEntries(areas.map(a => [a, 45]))\n    : Object.fromEntries(ratear(areas.map(a => ({ id: a, peso: 1 })), n).map(a => [a.id, a.slots]));\n\n  const alvo = [], entregue = [];\n  for (const area of areas) {\n    const total = totaisArea[area];\n    let candidatos = pesosIncidencia.filter(a => a.area === area)\n      .filter(a => filtroDisc.size === 0 || filtroDisc.has(normalizar(a.disciplina)))\n      .filter(a => filtroAss.size === 0 || filtroAss.has(normalizar(a.id)) || filtroAss.has(normalizar(a.assunto)))\n      .map(a => ({\n        ...a, id: a.id, peso_bruto: pesoDe(a), fator: Number(a.fator_texto ?? 1),\n        pesoBase: oficial ? Number(a.slots_em_45) : pesoDe(a),\n      }));\n    if (candidatos.length === 0) throw new Error(`nenhum assunto candidato na area ${area}`);\n\n    const discs = pesosDisciplina.filter(d => d.area === area &&\n      candidatos.some(a => a.disciplina === d.disciplina)).map(d => ({ ...d, slots_em_45: Number(d.slots_em_45) }));\n    const porDisc = Object.fromEntries(discs.map(d =>\n      [d.disciplina, candidatos.filter(a => a.disciplina === d.disciplina)]));\n\n    // Peso do assunto na area inteira, em %: participacao da disciplina x do assunto nela.\n    const somaDisc = discs.reduce((s, d) => s + d.slots_em_45, 0);\n    for (const d of discs) {\n      const soma = porDisc[d.disciplina].reduce((s, a) => s + a.pesoBase, 0);\n      for (const a of porDisc[d.disciplina])\n        a.peso_area = soma > 0 ? 100 * (d.slots_em_45 / somaDisc) * (a.pesoBase / soma) : 0;\n    }\n\n    let a1, a2;\n    if (!oficial && total < N_PEQUENO) {\n      // Poucas questoes: assuntos pedidos em partes iguais; senao os de maior peso, 1 cada.\n      if (filtroAss.size > 0) {\n        a1 = a2 = ratear(candidatos.map(a => ({ ...a, peso: 1 })), total);\n      } else {\n        const top = (chave) => {\n          const ids = new Set([...candidatos].sort((x, y) => chave(y) - chave(x) || x.id.localeCompare(y.id))\n            .slice(0, total).map(a => a.id));\n          const base = candidatos.map(a => ({ ...a, slots: ids.has(a.id) ? 1 : 0 }));\n          // Se total > numero de assuntos, o que sobra vai por peso.\n          const sobra = total - base.reduce((s, a) => s + a.slots, 0);\n          if (sobra > 0) ratear(base.map(a => ({ ...a, peso: chave(a) })), sobra)\n            .forEach((r, i) => { base[i].slots += r.slots; });\n          return base;\n        };\n        a1 = top(a => a.peso_area);\n        a2 = top(a => a.peso_area * a.fator);\n      }\n    } else {\n      a1 = ratearArea(total, discs, porDisc, oficial, false);\n      a2 = ratearArea(total, discs, porDisc, oficial, true);\n      if (!oficial && total >= PISO_N_MINIMO) {\n        for (const a of a2) {\n          if (a.slots === 0 && a.peso_area >= PISO_PESO && a.fator > 0.2) {\n            const maior = a2.reduce((x, y) => (y.slots > x.slots ? y : x));\n            maior.slots -= 1; a.slots = 1;\n          }\n        }\n      }\n    }\n    if (oficial) a1 = candidatos.map(a => ({ ...a, slots: Number(a.slots_em_45) }));\n    alvo.push(...a1); entregue.push(...a2);\n  }\n\n  // Blueprint: um slot por questao. Area na ordem oficial, assunto por peso na area.\n  const rnd = prng(spec.semente ?? spec.job_id ?? JSON.stringify(spec));\n  const blueprint = [];\n  let seq = 0;\n  for (const area of areas) {\n    const doArea = entregue.filter(a => a.area === area && a.slots > 0)\n      .sort((x, y) => y.peso_area - x.peso_area || x.id.localeCompare(y.id));\n    let k = 0;\n    for (const a of doArea) {\n      for (const rotulo of niveis(a.slots, spec, rnd)) {\n        k += 1; seq += 1;\n        blueprint.push({\n          slot_id: `${area}-${String(k).padStart(2, '0')}`,\n          numero: oficial ? INICIO_OFICIAL[area] + k - 1 : seq,\n          area, disciplina: a.disciplina, assunto_id: a.id, assunto: a.assunto,\n          recorte: null, contexto: null, genero_suporte: null, contexto_proibido: [],\n          habilidade: null, // Matriz do INEP quando mapear limpo. Nao inventar codigo.\n          nivel: rotulo, nivel_alvo: NIVEL_ALVO[rotulo],\n          suporte_permitido: area === 'LC' && a.disciplina !== 'Interdisciplinar'\n            ? ['texto'] : ['texto', 'tabela'],\n          fator_texto: a.fator,\n          peso_origem: { fonte: a.confianca, percentual: Number(a.peso) },\n        });\n      }\n    }\n  }\n\n  // Fidelidade: onde o entregue (so texto) difere do alvo (prova real). Declarado, nao escondido.\n  const desvios = [];\n  const soma = (lista, chave) => lista.reduce((m, a) => ({ ...m, [chave(a)]: (m[chave(a)] ?? 0) + a.slots }), {});\n  const dA = soma(alvo, a => `${a.area}|${a.disciplina}`), dE = soma(entregue, a => `${a.area}|${a.disciplina}`);\n  for (const k of Object.keys(dA)) if (dA[k] !== (dE[k] ?? 0)) {\n    const [area, disciplina] = k.split('|');\n    desvios.push({ nivel: 'disciplina', area, disciplina, alvo: dA[k], entregue: dE[k] ?? 0, motivo: 'restricao_texto' });\n  }\n  const eMap = Object.fromEntries(entregue.map(a => [a.id, a.slots]));\n  for (const a of alvo) if (a.slots !== (eMap[a.id] ?? 0))\n    desvios.push({ nivel: 'assunto', area: a.area, disciplina: a.disciplina, assunto: a.assunto,\n                   alvo: a.slots, entregue: eMap[a.id] ?? 0, motivo: 'restricao_texto' });\n  const movidos = alvo.reduce((s, a) => s + Math.max(0, a.slots - (eMap[a.id] ?? 0)), 0);\n\n  // Invariantes: se quebrar, falha alto (vai para o 99-erro), nunca segue com conta errada.\n  if (blueprint.length !== n) throw new Error(`rateio fechou ${blueprint.length} slots, esperado ${n}`);\n  for (const area of areas) {\n    const got = blueprint.filter(s => s.area === area).length;\n    if (got !== totaisArea[area]) throw new Error(`area ${area}: ${got} slots, esperado ${totaisArea[area]}`);\n  }\n  if (entregue.some(a => a.slots < 0) || alvo.reduce((s, a) => s + a.slots, 0) !== n)\n    throw new Error('rateio inconsistente entre alvo e entregue');\n\n  return {\n    blueprint,\n    fidelidade: { score: Math.round((1 - movidos / n) * 1000) / 1000, desvios },\n    totais_area: totaisArea,\n  };\n}\n\n// ---------------------------------------------- n8n\nconst PROMPT = \"# Agente 1 · Distribuidor — camada de variedade\\n\\nO rateio já foi feito. A contagem de slots já está fechada por código e **você não pode\\nalterá-la**. Você recebe os slots contados e decide, para cada um, o que o torna diferente\\ndos outros do mesmo assunto.\\n\\n## Você preenche exatamente três campos por slot\\n\\n| Campo | O que é |\\n|---|---|\\n| `recorte` | O sub-tema específico dentro do assunto. \\\"escala em planta baixa\\\", não \\\"razão e proporção\\\" |\\n| `genero_suporte` | Um de: `situacao-problema`, `tabela`, `texto informativo`, `texto de opinião`, `poema`, `crônica`, `trecho literário`, `documento de domínio público`, `conceito filosófico`, `diálogo` |\\n| `contexto` | A situação concreta em que a questão acontece: \\\"trilha em parque estadual\\\", \\\"conta de luz de uma casa\\\". Curta, específica, brasileira |\\n\\nTudo o mais vem pronto e passa intacto.\\n\\n## Regras de variedade\\n\\n1. **Nenhum contexto se repete no simulado.** Se o slot 3 usa transporte público, nenhum\\n   outro usa. O código monta o `contexto_proibido` de cada slot a partir dos seus\\n   `contexto` e rejeita a saída inteira se dois slots repetirem contexto.\\n2. **Dentro de um assunto com 3+ slots, os gêneros de suporte precisam variar.** Oito\\n   questões de razão e proporção não podem ser oito situações-problema de receita.\\n3. **Distribua os recortes.** Se o assunto é \\\"Geometria plana\\\" com 6 slots, cubra área,\\n   perímetro, semelhança, círculo, polígono e trigonometria no triângulo — não seis\\n   variações de área de retângulo.\\n4. **Respeite `suporte_permitido`.** Ele já reflete o `fator_texto` do assunto. Se não\\n   inclui `tabela`, não escolha `genero_suporte: tabela`.\\n5. **Contextos brasileiros e plausíveis.** ENEM contextualiza: transporte, saúde, energia,\\n   trabalho, meio ambiente, cultura, tecnologia, esporte, agricultura, cidade. Evite\\n   contexto genérico (\\\"uma empresa X\\\") e contexto de vestibular antigo (\\\"um trem parte de\\n   A para B\\\").\\n6. **Não force contexto social em tudo.** O ENEM contextualiza, mas nem toda questão de\\n   matemática precisa ser sobre desigualdade. Repetir a moldura crítica em 45 questões é\\n   tão artificial quanto não usá-la.\\n\\n## Saída\\n\\nLista `slots` com o mesmo número de itens que entrou, na mesma ordem, com os mesmos\\n`slot_id`, cada um com `slot_id`, `recorte`, `genero_suporte` e `contexto`. Se a contagem\\nda sua saída for diferente da entrada, o nó seguinte vai rejeitar tudo.\\n\";\nconst spec = $('Normalizar spec').first().json.spec;\nconst job_id = $('Criar job').first().json.id;\nconst pesos = $input.first().json;\nconst r = distribuir({ ...spec, job_id, semente: job_id }, pesos.disciplinas, pesos.assuntos);\nconst linhas = r.blueprint.map(s => [\n  `slot_id: ${s.slot_id}`, `area: ${s.area}`, `disciplina: ${s.disciplina}`, `assunto: ${s.assunto}`,\n  `nivel: ${s.nivel}`, `suporte_permitido: ${s.suporte_permitido.join(', ')}`].join(' | '));\nconst prompt = (PROMPT + '\\n\\n# Slots (' + linhas.length + ')\\n\\n' + linhas.join('\\n')).replace(/[{}]/g, c => (c === '{' ? '(' : ')'));\nreturn [{ json: { job_id, spec, blueprint: r.blueprint, fidelidade: r.fidelidade, prompt } }];"
+      }
+    },
+    {
+      "id": "0a956f58-3441-55b0-9e54-99fe3a5ae63b",
+      "name": "Variedade (Gemini)",
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.4,
+      "position": [
+        1100,
+        0
+      ],
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.prompt }}",
+        "hasOutputParser": true
+      },
+      "onError": "continueRegularOutput",
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 2000
+    },
+    {
+      "id": "046577d9-a43a-5428-8827-a69f39e011e5",
+      "name": "Gemini (variedade)",
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        1020,
+        220
+      ],
+      "parameters": {
+        "modelName": "models/gemini-2.5-pro",
+        "options": {
+          "temperature": 0.7
+        }
+      },
+      "credentials": {
+        "googlePalmApi": {
+          "id": "",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "id": "6a845e72-92d6-55f4-a88f-ee9a205761c7",
+      "name": "Formato da variedade",
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.2,
+      "position": [
+        1220,
+        220
+      ],
+      "parameters": {
+        "schemaType": "manual",
+        "inputSchema": "{\n  \"type\": \"object\",\n  \"required\": [\n    \"slots\"\n  ],\n  \"properties\": {\n    \"slots\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"object\",\n        \"required\": [\n          \"slot_id\",\n          \"recorte\",\n          \"genero_suporte\",\n          \"contexto\"\n        ],\n        \"properties\": {\n          \"slot_id\": {\n            \"type\": \"string\"\n          },\n          \"recorte\": {\n            \"type\": \"string\"\n          },\n          \"genero_suporte\": {\n            \"type\": \"string\"\n          },\n          \"contexto\": {\n            \"type\": \"string\"\n          }\n        }\n      }\n    }\n  }\n}"
+      }
+    },
+    {
+      "id": "896ffc10-7745-57b5-a39e-29bec2512c0e",
+      "name": "Validar variedade",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1340,
+        0
+      ],
+      "parameters": {
+        "jsCode": "// Agente 1, camada 3: junta a saida do LLM de variedade ao blueprint e confere que ele\n// nao mexeu na contagem. Ver prompts/01_distribuidor_variedade.md.\n// Fonte do no Code \"Validar variedade\" do 02-orquestrador.\n\nconst GENEROS = ['situacao-problema', 'tabela', 'texto informativo', 'texto de opiniao', 'poema',\n  'cronica', 'trecho literario', 'documento de dominio publico', 'conceito filosofico', 'dialogo'];\n\nconst chave = s => String(s ?? '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase()\n  .replace(/\\s+/g, ' ').trim();\n\n// O parser do n8n entrega { output: {...} }; versoes antigas entregam o objeto direto,\n// ou texto com cerca ```json.\nfunction lerSaidaLlm(json) {\n  let v = json?.output ?? json?.text ?? json;\n  if (typeof v === 'string') v = JSON.parse(v.replace(/^\\s*```(json)?/i, '').replace(/```\\s*$/, ''));\n  return v;\n}\n\nfunction juntarVariedade(blueprint, saidaLlm) {\n  const saida = lerSaidaLlm(saidaLlm);\n  const itens = Array.isArray(saida) ? saida : saida?.slots;\n  if (!Array.isArray(itens)) throw new Error('variedade: saida do LLM sem lista \"slots\"');\n  if (itens.length !== blueprint.length)\n    throw new Error(`variedade: entraram ${blueprint.length} slots e voltaram ${itens.length}. A contagem e do codigo, nao do LLM.`);\n\n  const porId = Object.fromEntries(itens.map(x => [x.slot_id, x]));\n  const faltando = blueprint.filter(s => !porId[s.slot_id]).map(s => s.slot_id);\n  if (faltando.length) throw new Error(`variedade: slot_id ausente na saida: ${faltando.join(', ')}`);\n\n  const usados = [];\n  const avisos = [];\n  const resultado = blueprint.map(s => {\n    const v = porId[s.slot_id];\n    let genero = chave(v.genero_suporte);\n    if (!GENEROS.includes(genero)) {\n      avisos.push(`${s.slot_id}: genero \"${v.genero_suporte}\" fora da lista; usei situacao-problema`);\n      genero = 'situacao-problema';\n    }\n    if (genero === 'tabela' && !s.suporte_permitido.includes('tabela')) {\n      avisos.push(`${s.slot_id}: tabela nao permitida neste assunto; usei situacao-problema`);\n      genero = 'situacao-problema';\n    }\n    const contexto = String(v.contexto ?? '').trim();\n    const recorte = String(v.recorte ?? '').trim();\n    if (!contexto || !recorte) throw new Error(`variedade: ${s.slot_id} sem recorte ou contexto`);\n    if (usados.some(u => chave(u) === chave(contexto)))\n      throw new Error(`variedade: contexto repetido no simulado: \"${contexto}\" (${s.slot_id})`);\n\n    // contexto_proibido acumula o que os slots anteriores usaram. Contabilidade e codigo.\n    const slot = { ...s, recorte, contexto, genero_suporte: genero, contexto_proibido: [...usados] };\n    usados.push(contexto);\n    return slot;\n  });\n  return { blueprint: resultado, avisos };\n}\n\n// ---------------------------------------------- n8n\nconst base = $('Rateio').first().json;\nconst saida = $input.first().json;\nif (saida.error) throw new Error(`LLM de variedade falhou: ${saida.error.message ?? saida.error}`);\nconst { blueprint, avisos } = juntarVariedade(base.blueprint, saida);\nreturn [{ json: { job_id: base.job_id, spec: base.spec, fidelidade: base.fidelidade, blueprint, avisos } }];"
+      }
+    },
+    {
+      "id": "4bf992c0-4774-5da5-a07a-fc7f99d36d39",
+      "name": "Criar simulado",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        1560,
+        0
+      ],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "with e as (select $1::jsonb as j),\ns as (\n  insert into public.simulados (job_id, tipo, spec, blueprint, fidelidade, status)\n  select (j->>'job_id')::uuid, j->'spec'->>'tipo', j->'spec', j->'blueprint', j->'fidelidade', 'gerando' from e\n  returning id, job_id\n),\nu as (\n  update public.jobs\n     set status = 'gerando', atualizado_em = now(),\n         progresso = jsonb_build_object('geradas', 0, 'total', (select jsonb_array_length(j->'blueprint') from e))\n   where id = (select job_id from s)\n)\nselect id as simulado_id from s;",
+        "options": {
+          "queryReplacement": "={{ JSON.stringify($json) }}"
+        }
+      },
+      "credentials": {
+        "postgres": {
+          "id": "",
+          "name": "Supabase Postgres"
+        }
+      }
+    },
+    {
+      "id": "dc08cc46-fbdc-573e-9de7-c46bb56c4152",
+      "name": "Separar slots",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1780,
+        0
+      ],
+      "parameters": {
+        "jsCode": "return $('Validar variedade').first().json.blueprint.map(s => ({ json: s }));"
+      }
+    },
+    {
+      "id": "f291c218-deb1-539e-acc2-9cfab4e49d77",
+      "name": "Gerar questao (MT)",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        2000,
+        0
+      ],
+      "parameters": {
+        "source": "database",
+        "workflowId": {
+          "__rl": true,
+          "value": "",
+          "mode": "list"
+        },
+        "mode": "each",
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      }
+    },
+    {
+      "id": "7f6729aa-23d2-5949-9635-8ee5aadffb25",
+      "name": "Gravar versao",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        2220,
+        0
+      ],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "-- Fase 1: sem auditoria, toda versao entra como REVISAR (conferencia a mao do Thiago).\nwith e as (select $1::jsonb as j),\nv as (\n  insert into public.questao_versoes (job_id, slot_id, versao, payload, veredito)\n  select (j->>'job_id')::uuid, j->>'slot_id', 1, j->'payload', 'REVISAR' from e\n  on conflict (job_id, slot_id, versao) do update set payload = excluded.payload\n  returning id, (xmax = 0) as nova   -- xmax = 0: linha inserida agora, nao atualizada\n),\nu as (\n  -- Reexecucao (upsert) nao conta de novo: so versao nova soma no progresso.\n  update public.jobs\n     set progresso = jsonb_set(progresso, '{geradas}', to_jsonb(coalesce((progresso->>'geradas')::int, 0) + 1)),\n         atualizado_em = now()\n   where id = (select (j->>'job_id')::uuid from e) and (select nova from v)\n)\nselect id from v;",
+        "options": {
+          "queryReplacement": "={{ JSON.stringify({ job_id: $('Criar job').first().json.id, slot_id: $json.slot.slot_id, payload: $json }) }}"
+        }
+      },
+      "credentials": {
+        "postgres": {
+          "id": "",
+          "name": "Supabase Postgres"
+        }
+      }
+    },
+    {
+      "id": "03baba6b-7cde-56de-825d-bf6e44e70cbc",
+      "name": "Fechar job",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        2440,
+        0
+      ],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "with e as (select $1::uuid as id),\ns as (update public.simulados set status = 'sem_auditoria' where job_id = (select id from e))\nupdate public.jobs set status = 'pronto', atualizado_em = now()\n where id = (select id from e)\nreturning id;",
+        "options": {
+          "queryReplacement": "={{ $('Criar job').first().json.id }}"
+        }
+      },
+      "credentials": {
+        "postgres": {
+          "id": "",
+          "name": "Supabase Postgres"
+        }
+      },
+      "executeOnce": true
+    },
+    {
+      "id": "7678693b-3d09-50f6-9a5d-37e8a97b198c",
+      "name": "Montar resposta",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2660,
+        0
+      ],
+      "parameters": {
+        "jsCode": "// Monta a resposta do 02-orquestrador para o chat. SEM gabarito, justificativa ou\n// resolucao: regra 4 do CLAUDE.md. O gabarito fica em questao_versoes.\n// Fonte do no Code \"Montar resposta\" do 02-orquestrador.\n\nfunction montarResposta({ jobId, spec, fidelidade, resultados }) {\n  const ok = resultados.filter(r => r.ok);\n  const falhas = resultados.filter(r => !r.ok);\n  const linhas = [];\n  linhas.push(`Simulado gerado: ${ok.length} de ${resultados.length} questoes passaram na conferencia de contrato.`);\n  linhas.push(`Job: ${jobId}`);\n  if (spec.assumido?.length) linhas.push(`Assumido por omissao: ${spec.assumido.join('; ')}.`);\n  const desvios = (fidelidade?.desvios ?? []).filter(d => d.nivel === 'assunto');\n  if (desvios.length) {\n    linhas.push(`Fidelidade ${fidelidade.score}. Desvios por restricao de texto:`);\n    for (const d of desvios) linhas.push(`- ${d.assunto}: alvo ${d.alvo}, entregue ${d.entregue}`);\n  }\n  linhas.push('Estas questoes ainda NAO passaram pelos auditores (Fase 1). Nao entregar a aluno.');\n  linhas.push('');\n\n  let n = 0;\n  for (const r of ok) {\n    n += 1;\n    const q = r.questao;\n    linhas.push(`### Questao ${n} · ${r.slot.assunto} · ${r.slot.nivel}`);\n    if (q.suporte.texto) linhas.push('', q.suporte.texto);\n    if (q.suporte.tabela_md) linhas.push('', q.suporte.tabela_md);\n    linhas.push('', `#FONTE: ${q.suporte.fonte}`, '', q.enunciado, '');\n    for (const a of q.alternativas) linhas.push(`${a.letra}) ${a.texto}`);\n    linhas.push('');\n  }\n  if (falhas.length) {\n    linhas.push('### Slots que nao fecharam');\n    for (const r of falhas) linhas.push(`- ${r.slot.slot_id} (${r.slot.assunto}): ${r.problemas.join('; ')}`);\n    linhas.push('');\n  }\n  linhas.push(`Gabarito e resolucao ficam fora do chat, em questao_versoes (job ${jobId}).`);\n  return linhas.join('\\n');\n}\n\n// ---------------------------------------------- n8n\nconst base = $('Validar variedade').first().json;\nconst resultados = $('Gerar questao (MT)').all().map(i => i.json);\nconst texto = montarResposta({ jobId: base.job_id, spec: base.spec, fidelidade: base.fidelidade, resultados });\n// \"response\" e o campo que a ferramenta do agente 0 devolve ao chat.\nreturn [{ json: { response: texto, job_id: base.job_id,\n                  ok: resultados.filter(r => r.ok).length, total: resultados.length } }];"
+      }
+    }
+  ],
+  "connections": {
+    "Gemini (variedade)": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Variedade (Gemini)",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Formato da variedade": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Variedade (Gemini)",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Receber pedido": {
+      "main": [
+        [
+          {
+            "node": "Normalizar spec",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalizar spec": {
+      "main": [
+        [
+          {
+            "node": "Criar job",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Criar job": {
+      "main": [
+        [
+          {
+            "node": "Ler pesos",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ler pesos": {
+      "main": [
+        [
+          {
+            "node": "Rateio",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Rateio": {
+      "main": [
+        [
+          {
+            "node": "Variedade (Gemini)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Variedade (Gemini)": {
+      "main": [
+        [
+          {
+            "node": "Validar variedade",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validar variedade": {
+      "main": [
+        [
+          {
+            "node": "Criar simulado",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Criar simulado": {
+      "main": [
+        [
+          {
+            "node": "Separar slots",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Separar slots": {
+      "main": [
+        [
+          {
+            "node": "Gerar questao (MT)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gerar questao (MT)": {
+      "main": [
+        [
+          {
+            "node": "Gravar versao",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gravar versao": {
+      "main": [
+        [
+          {
+            "node": "Fechar job",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fechar job": {
+      "main": [
+        [
+          {
+            "node": "Montar resposta",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "pinData": {}
+}

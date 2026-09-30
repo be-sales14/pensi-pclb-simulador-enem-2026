@@ -1,0 +1,160 @@
+{
+  "name": "10-gerador-mt",
+  "nodes": [
+    {
+      "id": "f1e44936-2a49-55ec-9bd8-0fa921f03d02",
+      "name": "Receber slot",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "6ac674db-dc41-541e-ad59-6e384573e4a5",
+      "name": "Montar prompt",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        220,
+        0
+      ],
+      "parameters": {
+        "jsCode": "// Prompt = prompts/02_gerador_mt.md + trechos de docs/04 e docs/05, montado por\n// scripts/montar_workflows.py. Os dados do slot vao em texto, sem chaves.\nconst PROMPT = \"# Agente 2 · Gerador — Matemática\\n\\nVocê escreve **uma** questão de Matemática do ENEM a partir de um `BlueprintSlot`.\\n\\n## Restrição que muda tudo: nenhuma imagem\\n\\nSem figura, sem gráfico, sem desenho. Você tem duas ferramentas:\\n\\n- **Texto.** A figura geométrica descrita em palavras — e a descrição tem que ser\\n  suficiente e não pode virar charada. Se a questão só funciona vendo a figura, ela não\\n  serve; devolva `inviavel: true` com o `motivo`, e o slot é redistribuído.\\n- **Tabela em Markdown.** Para dados, estatística, leitura de informação quantitativa.\\n\\n## Como monta a questão\\n\\n1. **Decida a conta antes do texto.** Escolha os números para que a resposta seja limpa\\n   (inteiro ou decimal de uma casa). Aluno de ENEM resolve sem calculadora.\\n2. **Escreva a resolução completa** antes de escrever o enunciado. Se você não conseguiu\\n   resolver de forma clara, o aluno também não vai.\\n3. **Escreva o contexto** com o `recorte` e o contexto do slot, respeitando\\n   `contexto_proibido`.\\n4. **Enunciado de 5 a 15 palavras**, direto: \\\"O volume do reservatório, em litros, é\\\".\\n5. **Distratores de erro real** (§abaixo).\\n6. **Confira a conta uma segunda vez**, do zero, sem olhar a primeira.\\n\\n## Distratores: cada um vem de um erro nomeado\\n\\nDistrator numérico aleatório é BLOCKER. Cada um dos quatro precisa vir de um erro que um\\naluno comete de verdade, e você declara qual em `justificativas[].erro_nomeado`:\\n\\n| Erro | Exemplo |\\n|---|---|\\n| `unidade_nao_convertida` | respondeu em m³ quando pediu litros |\\n| `raio_por_diametro` | usou o diâmetro na fórmula do raio |\\n| `base_invertida` | dividiu pelo valor final em vez do inicial no cálculo percentual |\\n| `formula_trocada` | usou área no lugar de volume |\\n| `etapa_faltando` | parou antes da última operação |\\n| `razao_invertida` | inverteu a proporção |\\n| `arredondamento_precoce` | arredondou no meio e acumulou erro |\\n\\nFaixa de plausibilidade: todos os cinco valores na mesma ordem de grandeza. Um distrator\\n100× maior é descartável de olho.\\n\\n## Regras de forma\\n\\n- Cinco alternativas, A a E.\\n- **A correta nunca é a mais longa.** Em questão numérica, isso vira: a correta não é o\\n  número com mais dígitos nem o único em formato diferente.\\n- Nenhuma alternativa repetida, nenhuma equivalente a outra (0,5 e 1/2 são a mesma).\\n- Ordene as alternativas numéricas em ordem crescente — é o que o ENEM faz, e mata o\\n  padrão de gerador.\\n- Não deixe rótulo interno, nem marca de raciocínio, nem \\\"Vamos calcular\\\".\\n\\n## Anti-IA\\n\\nVale o ruleset de `docs/04_ANTI_IA.md`. Em Matemática o que mais pega:\\n\\n- travessão em rajada no enunciado contextual;\\n- \\\"É importante notar que\\\" abrindo o parágrafo do contexto;\\n- vocabulário de LLM: *crucial, cenário atual, panorama*;\\n- contexto que termina em lição de moral;\\n- fonte fabricada — se você inventou o dado, `fonte_tipo: \\\"elaborado\\\"` e a linha de fonte\\n  é exatamente `Texto elaborado para este simulado.`, sem exceção.\\n\\n## Saída\\n\\nObjeto `Questao` do `docs/02_CONTRATOS.md`, com `resolucao` preenchida. Sem texto fora do\\nJSON.\\n\\n\\n# Regras anti-IA (docs/04_ANTI_IA.md, trechos)\\n\\n## 1. Escrita — o que denuncia texto gerado\\n\\n| # | Regra | Severidade | Verificável por código |\\n|---|---|---|---|\\n| 1.1 | **Máximo 1 travessão por bloco de texto.** O resto vira vírgula, parêntese ou reestruturação. É o sinal de IA mais comum | BLOCKER | sim |\\n| 1.2 | Nunca 3+ frases consecutivas com a mesma estrutura (sujeito + verbo + complemento) | AVISO | sim (heurística) |\\n| 1.3 | Nada de transição de enchimento abrindo parágrafo: *Além disso, Ademais, Adicionalmente, Portanto, Dessa forma, Nesse sentido, Vale destacar, É importante notar* | BLOCKER | sim |\\n| 1.4 | Sem empilhamento de hedge: *possivelmente, potencialmente, aparentemente, de certa forma* juntos | AVISO | sim |\\n| 1.5 | **[adaptado]** Nada de tricolon como ritmo default — \\\"rápido, eficiente e escalável\\\". Um por texto, no máximo | AVISO | sim (heurística) |\\n| 1.6 | **[adaptado]** Blacklist de vocabulário de LLM em português: *crucial, robusto, aprofundar, mergulhar, desvendar, panorama, cenário atual, no mundo de hoje, em um mundo cada vez mais, verdadeiro, fundamental (como intensificador), primordial, holístico, sinergia, tapeçaria* | BLOCKER | sim |\\n| 1.7 | **[adaptado]** Sem fechamento moralizante. Texto de apoio não termina em lição de casa (\\\"cabe à sociedade refletir sobre...\\\") | BLOCKER | parcial |\\n| 1.8 | **[adaptado]** Sem emoji, sem negrito decorativo, sem bullet no texto de apoio. ENEM não usa | BLOCKER | sim |\\n| 1.9 | Enunciado tem de 5 a 15 palavras. Enunciado longo e editorializado é marca nossa, não de prova | AVISO | sim |\\n\\n### Enunciados a evitar (herdado do §5 do `advanced-stems.md`)\\n\\nFórmulas que ficaram viciadas por repetição no EPCAR. As equivalentes em português:\\n\\n- \\\"Analisando criticamente o excerto acima, é possível inferir que\\\"\\n- \\\"Considerando o texto como um todo, o autor busca sobretudo\\\"\\n- \\\"Se colocarmos os textos I e II lado a lado, o ponto em comum é que\\\"\\n- \\\"Ao longo do texto, o autor assume a posição de que\\\"\\n- \\\"Reduzido ao seu argumento central, o trecho afirma que\\\"\\n\\n### Enunciados que soam a prova de verdade\\n\\nCurtos, planos, sem adjetivo de esforço:\\n\\n- \\\"De acordo com o texto,\\\"\\n- \\\"A partir da leitura do texto, conclui-se que\\\"\\n- \\\"O autor defende que\\\"\\n- \\\"No trecho, a expressão «X» tem a função de\\\"\\n- \\\"A relação entre os textos I e II se estabelece porque\\\"\\n- \\\"Assinale a alternativa que **contraria** o texto.\\\"\\n- \\\"Com base nos dados da tabela,\\\"\\n\\n---\\n\\n## 2. Distratores — as cinco alternativas\\n\\nAdaptado de `epcar-distractor-engine`. **A mudança de 4 para 5 alternativas é a maior\\nadaptação deste documento:** são 4 distratores para cobrir, e o quarto é sempre o mais\\nfraco. É onde o auditor aperta.\\n\\n| # | Regra | Severidade |\\n|---|---|---|\\n| 2.1 | **A correta nunca é a alternativa mais longa** | BLOCKER |\\n| 2.2 | Nenhum advérbio absoluto na correta: *sempre, nunca, exclusivamente, totalmente, apenas, unicamente, integralmente* | BLOCKER |\\n| 2.3 | Ao menos **um** distrator é troca de detalhe: um fato do texto com um elemento alterado | BLOCKER |\\n| 2.4 | Nenhum distrator absurdo. Todos defensáveis na primeira leitura | BLOCKER |\\n| 2.5 | Nenhum par de distratores semanticamente sobreposto — se dois cabem, a questão é anulável | BLOCKER |\\n| 2.6 | **[adaptado]** As 5 alternativas têm comprimento parecido (a mais longa não passa de 1,6× a mais curta) | AVISO |\\n| 2.7 | **[adaptado]** Nenhuma alternativa começa com a mesma palavra que as outras 4 (padrão de gerador) | AVISO |\\n| 2.8 | Em questão de ironia, crítica social ou satira, as 5 alternativas operam no mesmo nível conceitual (§5) | BLOCKER |\\n| 2.9 | **No máximo 1 ou 2 tipos de armadilha por questão.** Empilhar técnica deixa a prova com cara de IELTS, não de ENEM (§3) | AVISO |\\n\\n### Os quatro distratores, por função\\n\\nDistribuição-alvo para questão de interpretação:\\n\\n1. **Leitura literal / de superfície** — o que o texto parece dizer, não o que diz.\\n2. **Inversão** — toma a ironia ou a crítica pelo valor de face.\\n3. **Aspecto plausível, alvo errado** — tom certo, objeto errado.\\n4. **Verdadeiro mas irrelevante** — afirmação correta sobre o mundo que o texto não sustenta.\\n\\nPara Matemática e Ciências da Natureza, os distratores vêm de **erro de procedimento\\nreal**, não de número aleatório: esqueceu de dividir por 2, usou diâmetro no lugar do\\nraio, não converteu unidade, aplicou a fórmula da área no volume, inverteu a razão.\\nCada distrator numérico precisa declarar em `justificativas[]` **qual erro produz aquele\\nnúmero**. Distrator numérico sem erro nomeado é BLOCKER.\\n\\n---\\n\\n## 3. A armadilha do \\\"mais difícil\\\" — lição do Simulado 09\\n\\nRegistro direto da memória do EPCAR, e vale igual aqui.\\n\\nQuando pediram distratores mais difíceis, o projeto trouxe frameworks acadêmicos\\n(tipologia de armadilhas Cambridge/IELTS, os \\\"5 Ps\\\", parafrase pesada como regra). O\\nresultado foi tecnicamente mais difícil e **rejeitado**: soou a prova de proficiência\\ninternacional, não à prova real.\\n\\n**Dificuldade não vem de tipologia de armadilha.** Vem de:\\n\\n- densidade do texto de apoio;\\n- qualidade da paráfrase da alternativa correta;\\n- exigência de camada implícita para acertar.\\n\\nSe durante a geração o agente estiver **rotulando** distratores por tipo de armadilha,\\nempilhando técnicas ou escrevendo correta artificialmente distante do texto, ele derivou.\\nIsso está no prompt de todo gerador como regra explícita.\\n\\n---\\n\\n## 6. Fonte — BLOCKER absoluto\\n\\nQuestão de ENEM sempre cita fonte. Um agente que gera o texto de apoio **vai inventar**\\nessa linha se não for proibido.\\n\\n**Nenhum texto gerado recebe autor, veículo, URL ou data de acesso fictícios.**\\n\\nTrês rótulos válidos, e só três:\\n\\n```\\n#FONTE: Texto elaborado para este simulado.\\n#FONTE: <citação real e verificável>          — só com URL em mãos que responde\\n#FONTE: Domínio público — <obra, autor, ano>  — literatura e filosofia clássica\\n```\\n\\nLint determinístico (BLOCKER se casar em texto marcado como gerado):\\n\\n```\\n/Dispon[íi]vel em:/i\\n/Acesso em:/i\\n/https?:\\\\/\\\\//\\n/\\\\b(Folha|Estad[ãa]o|G1|BBC|El Pa[íi]s|Veja|Nature|Science|IBGE|IPCC)\\\\b/\\n```\\n\\n**Consequência de projeto:** questão que exige documento histórico real (carta, lei,\\ndiscurso) só pode ser gerada se o documento for de domínio público e o agente tiver o\\ntexto de verdade. Caso contrário o slot é redistribuído. Isso vale principalmente para\\nHistória e Filosofia — e é por isso que o `fator_texto` desses assuntos não é 1.0 na\\nprática, mesmo sendo textuais.\\n\\n---\\n\\n## 8. Limpeza da saída\\n\\n- Nenhum rótulo interno na questão final (`VOC`, `INF`, `GRM`, `nivel_alvo`).\\n- Nenhum template de enunciado visível.\\n- Nenhum artefato de checklist ou de validação.\\n- Nenhuma marca de raciocínio do agente (\\\"Vamos analisar...\\\", \\\"Como podemos ver...\\\").\\n\\nOs metadados existem — mas em campo separado do JSON, nunca no corpo da questão.\\n\\n\\n# Rubrica de dificuldade (docs/05_RUBRICA_DIFICULDADE.md, trechos)\\n\\n## Os cinco eixos\\n\\n### E1 · Carga de leitura\\n\\n| Pontos | Critério |\\n|---:|---|\\n| 1 | Texto de apoio até 80 palavras, ou nenhum |\\n| 2 | 81 a 200 palavras |\\n| 3 | Acima de 200 palavras, ou dois textos para cruzar |\\n\\n### E2 · Etapas de raciocínio\\n\\n| Pontos | Critério |\\n|---:|---|\\n| 1 | Uma etapa. Localizar informação, aplicar uma fórmula direta |\\n| 2 | Duas etapas. Converter e então calcular; entender e então comparar |\\n| 3 | Três ou mais etapas, ou uma etapa que exige escolher o caminho antes de andar |\\n\\n### E3 · Distância semântica até a alternativa correta\\n\\n| Pontos | Critério |\\n|---:|---|\\n| 1 | **Literal.** A correta repete palavras do texto |\\n| 2 | **Paráfrase.** A correta reformula o que o texto diz |\\n| 3 | **Inferência ou síntese.** A correta afirma algo que o texto sustenta mas não diz |\\n\\nEste é o eixo que mais separa questão de ENEM de questão de apostila. Muita questão gerada\\npor IA para em 1 e se apresenta como difícil por ter texto longo.\\n\\n### E4 · Interferência dos distratores\\n\\n| Pontos | Critério |\\n|---:|---|\\n| 1 | Três ou mais alternativas descartáveis por leitura superficial |\\n| 2 | Duas alternativas competem de verdade |\\n| 3 | Três ou mais alternativas competem; o descarte exige releitura do texto |\\n\\n### E5 · Pré-requisito de conteúdo\\n\\n| Pontos | Critério |\\n|---:|---|\\n| 1 | Nenhum. Resolve com o texto e senso comum |\\n| 2 | Um conceito de ensino médio |\\n| 3 | Dois ou mais conceitos, ou um conceito de baixa incidência em aula |\\n\\n---\\n\\n## Mapa soma → nível\\n\\n| Soma | Nível (1-9) | Rótulo |\\n|---:|---:|---|\\n| 5 | 1 | fácil |\\n| 6 | 2 | fácil |\\n| 7 | 3 | fácil |\\n| 8 | 4 | médio |\\n| 9 | 5 | médio |\\n| 10 | 6 | médio |\\n| 11 | 7 | difícil |\\n| 12 | 8 | difícil |\\n| 13-15 | 9 | difícil |\\n\\n**Veredito.** `APROVADO` se `|nivel_medido − nivel_alvo| <= 1`. Fora disso, o agente\\ndevolve `ajuste_sugerido` apontando **qual eixo** mover e como:\\n\\n> `nivel_alvo: 7, nivel_medido: 4. E3 está em 1 (a correta repete \\\"impermeabilização do\\n> solo\\\" do texto). Reescrever a correta como síntese do efeito, não como repetição do\\n> termo. E4 está em 1: as alternativas C e E são descartáveis pela extensão.`\\n\\nNunca \\\"está fácil, deixe mais difícil\\\". O agente 3 aponta eixo e mecanismo, senão o\\nrevisor só engorda o texto — que sobe E1 e não muda dificuldade real.\\n\\n---\\n\\n\\n# Formato\\n\\nDevolva só o objeto pedido pelo formato abaixo. `gabarito` é a letra da correta; `justificativas` tem uma entrada por letra, com `correta` verdadeiro só na do gabarito e `erro_nomeado` vazio nela. `tabela_md` vazio se não houver tabela. Se a questão for viável, `inviavel` é falso e `motivo` fica vazio.\";\nconst s = $json;\nconst dados = [\n  `slot_id: ${s.slot_id}`,\n  `area: ${s.area} · disciplina: ${s.disciplina}`,\n  `assunto: ${s.assunto}`,\n  `recorte: ${s.recorte}`,\n  `contexto: ${s.contexto}`,\n  `genero do texto de apoio: ${s.genero_suporte}`,\n  `nivel: ${s.nivel} (nivel_alvo ${s.nivel_alvo} na escala de 1 a 9 da rubrica)`,\n  `suporte permitido: ${(s.suporte_permitido ?? []).join(', ')}`,\n  `contextos ja usados neste simulado (proibidos): ${(s.contexto_proibido ?? []).join('; ') || 'nenhum'}`,\n].join('\\n');\nconst prompt = (PROMPT + '\\n\\n# O slot\\n\\n' + dados).replace(/[{}]/g, c => (c === '{' ? '(' : ')'));\nreturn { json: { slot: s, prompt } };",
+        "mode": "runOnceForEachItem"
+      }
+    },
+    {
+      "id": "909421bf-d084-5a83-8348-6e7afd15c0a8",
+      "name": "Gerar questao (Gemini)",
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.4,
+      "position": [
+        460,
+        0
+      ],
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.prompt }}",
+        "hasOutputParser": true
+      },
+      "onError": "continueRegularOutput",
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 2000
+    },
+    {
+      "id": "abb77533-11ac-5828-88b4-ed072d9b43ad",
+      "name": "Gemini (geracao)",
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        380,
+        220
+      ],
+      "parameters": {
+        "modelName": "models/gemini-2.5-pro",
+        "options": {
+          "temperature": 0.7
+        }
+      },
+      "credentials": {
+        "googlePalmApi": {
+          "id": "",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "id": "79964dd0-f016-5a34-8a97-4276a5eb5b43",
+      "name": "Formato da questao",
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.2,
+      "position": [
+        580,
+        220
+      ],
+      "parameters": {
+        "schemaType": "manual",
+        "inputSchema": "{\n  \"type\": \"object\",\n  \"required\": [\n    \"inviavel\"\n  ],\n  \"properties\": {\n    \"inviavel\": {\n      \"type\": \"boolean\",\n      \"description\": \"true só se a questão exigir imagem\"\n    },\n    \"motivo\": {\n      \"type\": \"string\",\n      \"description\": \"por que é inviável sem imagem; vazio se viável\"\n    },\n    \"suporte\": {\n      \"type\": \"object\",\n      \"required\": [\n        \"texto\",\n        \"fonte\",\n        \"fonte_tipo\"\n      ],\n      \"properties\": {\n        \"texto\": {\n          \"type\": \"string\"\n        },\n        \"tabela_md\": {\n          \"type\": \"string\",\n          \"description\": \"tabela em Markdown, ou vazio\"\n        },\n        \"fonte\": {\n          \"type\": \"string\"\n        },\n        \"fonte_tipo\": {\n          \"type\": \"string\",\n          \"enum\": [\n            \"elaborado\",\n            \"real_verificada\",\n            \"dominio_publico\"\n          ]\n        }\n      }\n    },\n    \"enunciado\": {\n      \"type\": \"string\"\n    },\n    \"alternativas\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"object\",\n        \"required\": [\n          \"letra\",\n          \"texto\"\n        ],\n        \"properties\": {\n          \"letra\": {\n            \"type\": \"string\",\n            \"enum\": [\n              \"A\",\n              \"B\",\n              \"C\",\n              \"D\",\n              \"E\"\n            ]\n          },\n          \"texto\": {\n            \"type\": \"string\"\n          }\n        }\n      }\n    },\n    \"gabarito\": {\n      \"type\": \"string\",\n      \"enum\": [\n        \"A\",\n        \"B\",\n        \"C\",\n        \"D\",\n        \"E\"\n      ]\n    },\n    \"justificativas\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"object\",\n        \"required\": [\n          \"letra\",\n          \"correta\",\n          \"por_que\",\n          \"erro_nomeado\"\n        ],\n        \"properties\": {\n          \"letra\": {\n            \"type\": \"string\",\n            \"enum\": [\n              \"A\",\n              \"B\",\n              \"C\",\n              \"D\",\n              \"E\"\n            ]\n          },\n          \"correta\": {\n            \"type\": \"boolean\"\n          },\n          \"por_que\": {\n            \"type\": \"string\"\n          },\n          \"erro_nomeado\": {\n            \"type\": \"string\",\n            \"description\": \"erro que gera o distrator; vazio na correta\"\n          }\n        }\n      }\n    },\n    \"resolucao\": {\n      \"type\": \"string\"\n    }\n  }\n}"
+      }
+    },
+    {
+      "id": "fcf5216f-c25c-59d8-9e1b-ce929285fb74",
+      "name": "Validar questao",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        720,
+        0
+      ],
+      "parameters": {
+        "jsCode": "// Confere a Questao que o gerador devolveu contra o contrato (docs/02_CONTRATOS.md) e\n// contra as regras nao negociaveis 1 e 2 do CLAUDE.md (sem imagem, sem fonte fabricada).\n// NAO e a auditoria da Fase 2: sem nivel, sem distratores, sem solver. So o que quebra o\n// contrato ou uma linha vermelha.\n// Fonte do no Code \"Validar questao\" dos geradores.\n\nconst LETRAS = ['A', 'B', 'C', 'D', 'E'];\nconst FONTE_ELABORADO = 'Texto elaborado para este simulado.';\n// docs/04_ANTI_IA.md §6, igual a regra 6.1 de data/lint_antiia.json\nconst FONTE_FABRICADA = /(Dispon[íi]vel em:|Acesso em:|https?:\\/\\/|\\b(Folha|Estad[ãa]o|G1|BBC|El Pa[íi]s|Veja|Nature|Science|IBGE|IPCC|Reuters|UOL)\\b)/i;\n// PLANO.md §2.1: texto que depende de figura nao existe neste projeto.\nconst REFERE_IMAGEM = /\\b(figura|imagem|ilustra[çc][ãa]o|gr[áa]fico|desenho|foto(grafia)?|mapa)\\s+(abaixo|acima|a seguir|ao lado|seguinte|apresentad[oa])\\b|\\bobserve (a|o) (figura|imagem|gr[áa]fico|desenho)\\b/i;\n\nconst palavras = s => String(s ?? '').trim().split(/\\s+/).filter(Boolean).length;\nconst temNumero = s => /\\d/.test(String(s ?? ''));\nconst numero = s => {\n  const m = String(s ?? '').replace(/\\./g, '').replace(',', '.').match(/-?\\d+(\\.\\d+)?/);\n  return m ? Number(m[0]) : NaN;\n};\n\nfunction lerSaidaLlm(json) {\n  let v = json?.output ?? json?.text ?? json;\n  if (typeof v === 'string') v = JSON.parse(v.replace(/^\\s*```(json)?/i, '').replace(/```\\s*$/, ''));\n  return v;\n}\n\nfunction validarQuestao(bruto, slot) {\n  const problemas = [], avisos = [];\n  let q;\n  try { q = lerSaidaLlm(bruto); } catch (e) {\n    return { ok: false, inviavel: false, problemas: [`saida nao e JSON: ${e.message}`], avisos, questao: null };\n  }\n  if (!q || typeof q !== 'object') return { ok: false, inviavel: false, problemas: ['saida vazia'], avisos, questao: null };\n\n  if (q.inviavel === true)\n    return { ok: false, inviavel: true, problemas: [`inviavel sem imagem: ${q.motivo ?? 'sem motivo'}`], avisos, questao: null };\n\n  // Alternativas: 5, A-E, sem repetir letra nem texto.\n  const alts = Array.isArray(q.alternativas) ? q.alternativas : [];\n  const letras = alts.map(a => String(a?.letra ?? '').trim().toUpperCase());\n  if (alts.length !== 5 || LETRAS.some(l => !letras.includes(l)))\n    problemas.push(`alternativas precisam ser 5, de A a E; vieram ${JSON.stringify(letras)}`);\n  const textos = alts.map(a => String(a?.texto ?? '').trim().toLowerCase().replace(/\\s+/g, ' '));\n  if (textos.some(t => !t)) problemas.push('alternativa com texto vazio');\n  if (new Set(textos).size !== textos.length) problemas.push('alternativas com texto repetido');\n\n  const gabarito = String(q.gabarito ?? '').trim().toUpperCase();\n  if (!LETRAS.includes(gabarito)) problemas.push(`gabarito invalido: \"${q.gabarito}\"`);\n\n  // Justificativas: 5, uma por letra, uma so correta, e e a do gabarito.\n  const justs = Array.isArray(q.justificativas) ? q.justificativas : [];\n  const jl = justs.map(j => String(j?.letra ?? '').trim().toUpperCase());\n  if (justs.length !== 5 || LETRAS.some(l => !jl.includes(l)))\n    problemas.push(`justificativas precisam ser 5, uma por letra; vieram ${JSON.stringify(jl)}`);\n  const corretas = justs.filter(j => j?.correta === true).map(j => String(j.letra).toUpperCase());\n  if (corretas.length !== 1) problemas.push(`justificativas marcam ${corretas.length} corretas, esperado 1`);\n  else if (corretas[0] !== gabarito) problemas.push(`justificativa correta e ${corretas[0]}, gabarito e ${gabarito}`);\n  if (justs.some(j => !String(j?.por_que ?? '').trim())) problemas.push('justificativa sem \"por_que\"');\n\n  // MT e CN: distrator numerico sem erro nomeado e BLOCKER (docs/04_ANTI_IA.md §2).\n  if (['MT', 'CN'].includes(slot?.area)) {\n    const textoDe = Object.fromEntries(alts.map(a => [String(a.letra).toUpperCase(), a.texto]));\n    for (const j of justs) {\n      const l = String(j?.letra ?? '').toUpperCase();\n      if (j?.correta !== true && temNumero(textoDe[l]) && !String(j?.erro_nomeado ?? '').trim())\n        problemas.push(`distrator numerico ${l} sem erro_nomeado`);\n    }\n    const nums = LETRAS.map(l => numero(textoDe[l]));\n    if (nums.every(x => !Number.isNaN(x)) && nums.some((x, i) => i > 0 && x < nums[i - 1]))\n      avisos.push('alternativas numericas fora da ordem crescente');\n  }\n\n  // Suporte, fonte e imagem: regras 1 e 2 do CLAUDE.md.\n  const sup = q.suporte ?? {};\n  const texto = String(sup.texto ?? '');\n  const tabela = sup.tabela_md ? String(sup.tabela_md) : null;\n  let fonte = String(sup.fonte ?? '').replace(/^#?FONTE:\\s*/i, '').trim();\n  const fonteTipo = String(sup.fonte_tipo ?? '').trim();\n  if (!['elaborado', 'real_verificada', 'dominio_publico'].includes(fonteTipo))\n    problemas.push(`fonte_tipo invalido: \"${sup.fonte_tipo}\"`);\n  if (fonteTipo === 'elaborado') {\n    if (fonte !== FONTE_ELABORADO) problemas.push(`fonte de texto elaborado tem que ser exatamente \"${FONTE_ELABORADO}\"; veio \"${fonte}\"`);\n    if (FONTE_FABRICADA.test(texto) || FONTE_FABRICADA.test(fonte) || (tabela && FONTE_FABRICADA.test(tabela)))\n      problemas.push('BLOCKER fonte fabricada: texto elaborado cita veiculo, URL ou \"Disponivel em/Acesso em\"');\n  }\n  if (fonteTipo === 'real_verificada')\n    problemas.push('fonte real_verificada exige busca real com URL; o gerador nao tem busca nesta fase');\n  if (fonteTipo === 'dominio_publico' && !/^Dom[íi]nio p[úu]blico\\s+[—-]\\s+.+/.test(fonte))\n    problemas.push('fonte de dominio publico fora do formato \"Dominio publico — obra, autor, ano\"');\n  if (tabela && !(slot?.suporte_permitido ?? []).includes('tabela'))\n    problemas.push('tabela num slot que nao permite tabela');\n  const corpo = [texto, q.enunciado, ...alts.map(a => a?.texto)].join('\\n');\n  if (REFERE_IMAGEM.test(corpo)) problemas.push('BLOCKER texto depende de figura, grafico ou imagem');\n\n  const enunciado = String(q.enunciado ?? '').trim();\n  if (!enunciado) problemas.push('enunciado vazio');\n  else if (palavras(enunciado) < 5 || palavras(enunciado) > 15)\n    avisos.push(`enunciado com ${palavras(enunciado)} palavras (faixa 5 a 15)`);\n  if (!String(q.resolucao ?? '').trim()) problemas.push('resolucao vazia');\n  if (!texto.trim() && !tabela) problemas.push('sem texto de apoio nem tabela');\n\n  const questao = {\n    slot_id: slot?.slot_id ?? q.slot_id ?? null,\n    versao: 1,\n    suporte: { texto, tabela_md: tabela, fonte, fonte_tipo: fonteTipo },\n    enunciado,\n    alternativas: alts.map(a => ({ letra: String(a.letra).toUpperCase(), texto: String(a.texto).trim() }))\n      .sort((a, b) => a.letra.localeCompare(b.letra)),\n    gabarito,\n    justificativas: justs.map(j => ({\n      letra: String(j.letra).toUpperCase(), correta: j.correta === true,\n      por_que: String(j.por_que ?? '').trim(), erro_nomeado: j.erro_nomeado ? String(j.erro_nomeado) : null,\n    })).sort((a, b) => a.letra.localeCompare(b.letra)),\n    resolucao: String(q.resolucao ?? '').trim(),\n    metadados: { palavras_suporte: palavras(texto), tem_tabela: Boolean(tabela) },\n  };\n  return { ok: problemas.length === 0, inviavel: false, problemas, avisos, questao };\n}\n\n// ---------------------------------------------- n8n\nconst slot = $('Montar prompt').item.json.slot;\n// Com onError=continue, falha do LLM (depois dos retries) chega aqui como { error }.\nif ($json.error) {\n  return { json: { slot, ok: false, inviavel: false, avisos: [], questao: null,\n                   problemas: [`LLM falhou: ${$json.error.message ?? $json.error}`] } };\n}\nreturn { json: { slot, ...validarQuestao($json, slot) } };",
+        "mode": "runOnceForEachItem"
+      }
+    }
+  ],
+  "connections": {
+    "Gemini (geracao)": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Gerar questao (Gemini)",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Formato da questao": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Gerar questao (Gemini)",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Receber slot": {
+      "main": [
+        [
+          {
+            "node": "Montar prompt",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Montar prompt": {
+      "main": [
+        [
+          {
+            "node": "Gerar questao (Gemini)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gerar questao (Gemini)": {
+      "main": [
+        [
+          {
+            "node": "Validar questao",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "pinData": {}
+}

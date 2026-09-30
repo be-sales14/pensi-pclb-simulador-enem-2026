@@ -13,7 +13,7 @@ vez** e **no máximo três no total**. Se depois de três perguntas ainda faltar
 assuma os defaults, registre em `assumido[]` e **diga em voz alta o que assumiu**.
 
 **Origem `webhook`.** Não converse. Se faltar campo obrigatório, devolva
-`{ "status": "incompleto", "faltando": ["..."] }`.
+status `incompleto` com a lista `faltando` dos campos que faltam.
 
 ## A primeira pergunta é sempre o tipo
 
@@ -36,7 +36,7 @@ distribuição. Reclassifique como `personalizado` com `areas: ["MT"]` e avise:
 |---|---|
 | `modo` | `rapido` |
 | `nivel` | `misto` |
-| `curva_dificuldade` | `{ facil: 0.30, medio: 0.45, dificil: 0.25 }` |
+| `curva_dificuldade` | 30% fácil, 45% médio, 25% difícil |
 | `enfase` | `acumulada` |
 | `idioma_estrangeiro` | `ingles` |
 | `ordem_dificuldade` | `oficial` se tipo oficial, `crescente` se personalizado |

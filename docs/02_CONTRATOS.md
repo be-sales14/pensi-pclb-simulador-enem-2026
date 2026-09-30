@@ -45,10 +45,13 @@ coisa do que pediu.
   "numero": 142,
   "area": "MT",
   "disciplina": "Matematica",
+  "assunto_id": "MT.razao_proporcao",
   "assunto": "Razao, proporcao e regra de tres",
   "recorte": "escala em planta baixa",
+  "contexto": "reforma de apartamento",
   "habilidade": "H10",
-  "nivel_alvo": 6,
+  "nivel": "medio",
+  "nivel_alvo": 5,
   "genero_suporte": "situacao-problema | tabela | texto informativo | poema | cronica | trecho literario | documento historico | conceito filosofico | dialogo",
   "suporte_permitido": ["texto", "tabela"],
   "contexto_proibido": ["receita de bolo", "combustivel"],
@@ -56,8 +59,11 @@ coisa do que pediu.
 }
 ```
 
-- `recorte` e `contexto_proibido` são o que o LLM da camada 3 do distribuidor produz, para
-  dar variedade. `contexto_proibido` acumula o que já foi usado no simulado.
+- `recorte`, `contexto` e `genero_suporte` são o que o LLM da camada 3 do distribuidor
+  produz, para dar variedade. `contexto_proibido` **não** vem do LLM: o nó `Code` o monta
+  acumulando os `contexto` dos slots anteriores, e rejeita contexto repetido.
+- `nivel` é `facil | medio | dificil`; `nivel_alvo` é o centro da faixa na escala 1-9 da
+  rubrica (2, 5, 8).
 - `suporte_permitido` sai do `fator_texto` do assunto. Nunca inclui `imagem`.
 - `habilidade` é da Matriz de Referência do INEP quando aplicável, e `null` quando o
   assunto não mapeia limpo. Não inventar código de habilidade.

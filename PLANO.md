@@ -78,7 +78,7 @@ diferentes, com agentes diferentes. Fica como Fase 6, e reaproveita o que já ex
 | **Como os sub-agentes são implementados** | Sub-workflows n8n (`Execute Sub-workflow`), um por agente | Testável isoladamente, versionável, e o `AI Agent` node pode chamá-los como tool quando fizer sentido |
 | **Webhook síncrono ou assíncrono** | **Assíncrono, obrigatório** | 180 questões × 3 chamadas de LLM = ~540 chamadas. Nenhum webhook sobrevive. Retorna `202 + job_id`, front acompanha por polling ou Supabase Realtime |
 | **Onde ficam os pesos de incidência** | Tabela no Supabase (`pesos_incidencia`), semeada de `data/pesos_incidencia.json` | Recalibrar quando sair o ENEM 2026 não pode exigir editar prompt |
-| **Modelo** | Claude Sonnet 5 para geração, Claude Opus 5 para auditoria e resolução independente | Geração é volume; auditoria é julgamento. Um `modo` no spec permite trocar |
+| **Modelo** | **Gemini** (decisão do Thiago, 2026-09-30). Modelo rápido (Flash) para conversa e tarefas leves; modelo mais forte (Pro) para geração, auditoria e solver cego. O plano original era Claude Sonnet/Opus; a arquitetura não depende do provedor | Geração é volume; auditoria é julgamento. A instância n8n do Thiago é a de teste; a de produção (Bernardo) escolhe os modelos na hora de importar |
 | **Anti-repetição** | `pgvector` no banco de questões aprovadas | Mesmo problema que o EPCAR resolveu com arquivos de memória por simulado. Em escala, é embedding |
 
 ---
