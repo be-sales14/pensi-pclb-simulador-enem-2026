@@ -11,8 +11,8 @@ não é verificável, a fase não fecha.
 
 - [x] `sql/001_init.sql` rodado no Supabase (projeto `uwnuehhebwckbbhkaqyx`, 2026-09-28)
 - [x] `data/pesos_incidencia.json` semeado em `pesos_incidencia` e `pesos_disciplina`
-- [ ] Credenciais de LLM e Supabase criadas no n8n
-- [ ] Workflow `99-erro` (Error Trigger) no ar antes de tudo
+- [x] Credenciais de LLM e Supabase criadas no n8n (instância de teste do Thiago)
+- [x] Workflow `99-erro` (Error Trigger) no ar antes de tudo. Gravação no banco testada; o vínculo "Error workflow" de cada workflow se confirma na primeira falha real da Fase 1
 
 **Critério de pronto.** `python3 scripts/validar_pesos.py` sai com código 0, e a mesma
 validação roda contra o que está **no banco**, não só no arquivo:
