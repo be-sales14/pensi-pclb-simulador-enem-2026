@@ -4,7 +4,7 @@ Um arquivo `.json` por workflow, exportado do n8n (`... > Download`).
 
 | Arquivo | Workflow | Fase |
 |---|---|---|
-| `99-erro.json` | Error Trigger — log e marca o job como `erro` | 0 |
+| `99-erro.json` | Error Trigger — log e marca o job como `erro`. **Não usado na instância de teste do Thiago**: sem ele, job que quebra fica parado em `gerando` | 0 |
 | `98-teste-erro.json` | Falha de propósito para testar o `99-erro`. Desativar depois do teste | 0 |
 | `00-entrada-chat.json` | Chat Trigger + agente 0, com a ferramenta `gerar_simulado` | 1 |
 | `02-orquestrador.json` | Spec, rateio, variedade, loop de geração, gravação (Fase 1: sem auditoria) | 1 |
@@ -44,8 +44,7 @@ A ordem importa, porque um workflow chama o outro:
 3. `00-entrada-chat.json`: Postgres em **Listar assuntos**, Gemini em
    **Gemini (conversa)**, e na ferramenta **gerar_simulado** escolher o workflow
    `02-orquestrador`.
-4. Nos três: **Settings → Error workflow → 99-erro**.
-5. Nos nós Gemini, escolher o modelo mais novo disponível: um forte (Pro) para geração e
+4. Nos nós Gemini, escolher o modelo mais novo disponível: um forte (Pro) para geração e
    variedade, um rápido (Flash) para a conversa.
 
 **Antes de exportar:** confira que nenhuma credencial ficou embutida no JSON. O n8n
