@@ -2,8 +2,14 @@
 
 ## O projeto
 
-Gerador de simulados do ENEM com agentes de IA. Back em **n8n**, front em **Vercel**,
-dados em **Supabase**. Projeto didático, feito com alunos.
+Montador de simulados do ENEM com **questões reais** de provas anteriores (2019-2025),
+misturadas na proporção da prova oficial. Back em **n8n**, front em **Vercel**, dados em
+**Supabase**. Projeto didático, feito com alunos.
+
+**Mudança de rumo (2026-10-01, decisão do Thiago):** as questões geradas por IA não
+chegaram ao nível do ENEM. O produto principal agora sorteia questões reais do banco
+(`data/banco/`). O pipeline de geração (Fase 1) fica no repo como material de aula. Ver
+[PLANO.md](PLANO.md) §0.
 
 Leia [PLANO.md](PLANO.md) antes de mexer em qualquer coisa. Os detalhes estão em `docs/`.
 
@@ -16,13 +22,15 @@ Conversa com o usuário em **português**. Conteúdo das questões em português
 
 Estas quatro não se discutem sem o Thiago:
 
-1. **Nenhuma imagem.** Toda questão é texto. Tabela em Markdown é texto e pode; gráfico
-   vira tabela; charge, tirinha, mapa e obra de arte não existem, o slot é redistribuído.
-   Ver [PLANO.md](PLANO.md) §2.1.
-2. **Fonte fabricada é BLOCKER.** Texto gerado nunca recebe autor, veículo, URL ou data de
+1. **Questão real é mostrada como o recorte da página oficial**, com suas figuras. Nada de
+   reescrever, resumir ou "limpar" o enunciado: o recorte é o que o aluno vê; o texto
+   extraído serve só para busca e classificação. *(Até 2026-10-01 esta regra era "nenhuma
+   imagem", valendo para questão gerada. Questão gerada continua sem imagem.)*
+2. **Fonte fabricada é BLOCKER** (vale para questão gerada). Texto gerado nunca recebe autor, veículo, URL ou data de
    acesso fictícios. Só três rótulos válidos, ver [docs/04_ANTI_IA.md](docs/04_ANTI_IA.md) §6.
-3. **O solver cego é bloqueante em todos os modos.** Nenhuma questão vai para o aluno sem
-   ter sido resolvida por um agente que não viu o gabarito.
+3. **O solver cego é bloqueante para questão gerada.** Nenhuma questão gerada vai para o
+   aluno sem ter sido resolvida por um agente que não viu o gabarito. Questão real usa o
+   gabarito oficial do INEP; questão anulada nunca entra em simulado.
 4. **O gabarito não vai para o browser junto com a prova.** Ele existe só na resposta do
    endpoint de correção.
 

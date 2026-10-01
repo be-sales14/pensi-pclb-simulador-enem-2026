@@ -1,0 +1,121 @@
+{
+  "doc": "Cadernos oficiais do INEP que alimentam o banco. {kb} = ~/Documents/kb_enem (local do Thiago); {repo} = este repo.",
+  "regra_de_cor": "A numeracao muda com a cor do caderno. Prova e gabarito sempre da MESMA cor. 2025 D2 usa o caderno 5 (amarelo) porque a classificacao de Matematica (indahouse-crm/docs/enem) usa essa numeracao.",
+  "cadernos": [
+    {
+      "ano": 2019,
+      "dia": 1,
+      "caderno": 1,
+      "cor": "azul",
+      "prova": "{kb}/2019_PV_impresso_D1_CD1.pdf",
+      "gabarito": "{kb}/2019_GB_impresso_D1_CD1.pdf"
+    },
+    {
+      "ano": 2019,
+      "dia": 2,
+      "caderno": 7,
+      "cor": "azul",
+      "prova": "{kb}/2019_PV_impresso_D2_CD7.pdf",
+      "gabarito": "{repo}/data/fontes/2019_GB_impresso_D2_CD7.pdf",
+      "url_gabarito": "https://download.inep.gov.br/educacao_basica/enem/gabaritos/2019/gabarito_2_dia_caderno_7_azul_aplicacao_regular.pdf",
+      "nota": "o 2019_GB_impresso_D2_CD7.pdf do kb_enem e uma pagina de erro 404 do INEP salva como .pdf"
+    },
+    {
+      "ano": 2020,
+      "dia": 1,
+      "caderno": 1,
+      "cor": "azul",
+      "prova": "{kb}/2020_PV_impresso_D1_CD1.pdf",
+      "gabarito": "{kb}/2020_GB_impresso_D1_CD1.pdf"
+    },
+    {
+      "ano": 2020,
+      "dia": 2,
+      "caderno": 7,
+      "cor": "azul",
+      "prova": "{kb}/2020_PV_impresso_D2_CD7.pdf",
+      "gabarito": "{kb}/2020_GB_impresso_D2_CD7.pdf"
+    },
+    {
+      "ano": 2021,
+      "dia": 1,
+      "caderno": 1,
+      "cor": "azul",
+      "prova": "{kb}/2021_PV_impresso_D1_CD1.pdf",
+      "gabarito": "{kb}/2021_GB_impresso_D1_CD1.pdf"
+    },
+    {
+      "ano": 2021,
+      "dia": 2,
+      "caderno": 7,
+      "cor": "azul",
+      "prova": "{kb}/2021_PV_impresso_D2_CD7.pdf",
+      "gabarito": "{kb}/2021_GB_impresso_D2_CD7.pdf"
+    },
+    {
+      "ano": 2022,
+      "dia": 1,
+      "caderno": 1,
+      "cor": "azul",
+      "prova": "{kb}/2022_PV_impresso_D1_CD1.pdf",
+      "gabarito": "{kb}/2022_GB_impresso_D1_CD1.pdf"
+    },
+    {
+      "ano": 2022,
+      "dia": 2,
+      "caderno": 7,
+      "cor": "azul",
+      "prova": "{kb}/2022_PV_impresso_D2_CD7.pdf",
+      "gabarito": "{kb}/2022_GB_impresso_D2_CD7.pdf"
+    },
+    {
+      "ano": 2023,
+      "dia": 1,
+      "caderno": 1,
+      "cor": "azul",
+      "prova": "{kb}/2023_PV_impresso_D1_CD1.pdf",
+      "gabarito": "{kb}/2023_GB_impresso_D1_CD1.pdf"
+    },
+    {
+      "ano": 2023,
+      "dia": 2,
+      "caderno": 7,
+      "cor": "azul",
+      "prova": "{kb}/2023_PV_impresso_D2_CD7.pdf",
+      "gabarito": "{kb}/2023_GB_impresso_D2_CD7.pdf"
+    },
+    {
+      "ano": 2024,
+      "dia": 1,
+      "caderno": 1,
+      "cor": "azul",
+      "prova": "{kb}/2024_PV_impresso_D1_CD1.pdf",
+      "gabarito": "{kb}/2024_GB_impresso_D1_CD1.pdf"
+    },
+    {
+      "ano": 2024,
+      "dia": 2,
+      "caderno": 7,
+      "cor": "azul",
+      "prova": "{kb}/2024_PV_impresso_D2_CD7.pdf",
+      "gabarito": "{kb}/2024_GB_impresso_D2_CD7.pdf"
+    },
+    {
+      "ano": 2025,
+      "dia": 1,
+      "caderno": 1,
+      "cor": "azul",
+      "prova": "{kb}/2025_PV_impresso_D1_CD1.pdf",
+      "gabarito": "{kb}/2025_GB_impresso_D1_CD1.pdf"
+    },
+    {
+      "ano": 2025,
+      "dia": 2,
+      "caderno": 5,
+      "cor": "amarela",
+      "prova": "{kb}/2025_PV_impresso_D2_CD5.pdf",
+      "gabarito": "{repo}/data/fontes/2025_GB_impresso_D2_CD5.pdf",
+      "url_gabarito": "https://download.inep.gov.br/enem/provas_e_gabaritos/2025_GB_impresso_D2_CD5.pdf"
+    }
+  ]
+}

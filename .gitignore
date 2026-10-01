@@ -8,3 +8,7 @@ __pycache__/
 n8n/*.credentials.json
 sql/seed_pesos.sql
 .claude/settings.local.json
+
+# Banco de questoes reais: PDFs de origem e imagens recortadas ficam fora do git
+data/fontes/
+data/banco/img/

@@ -5,6 +5,38 @@ moram em `docs/`.
 
 ---
 
+## 0. Mudança de rumo (2026-10-01)
+
+As 5 questões de Matemática geradas na Fase 1 tinham gabarito certo, mas não tinham nível
+de ENEM: distratores fracos, uma etapa só, contexto batido. **Decisão do Thiago:** o produto
+passa a montar simulados com **questões reais** de edições anteriores, misturando anos,
+na proporção da prova oficial.
+
+| Antes | Agora |
+|---|---|
+| LLM escreve cada questão | questão vem do banco de provas oficiais 2019-2025 (1.295 itens) |
+| gabarito do gerador, conferido por solver cego | gabarito oficial do INEP; anuladas fora |
+| sem imagem (regra 1 antiga) | recorte da página oficial, com figura |
+| ~1.000 chamadas de LLM por simulado oficial | zero LLM para montar: sorteio determinístico em segundos |
+
+**O que continua igual:** o rateio por maior resto sobre `pesos_incidencia` e
+`pesos_disciplina` (`n8n/src/distribuidor.lib.js`), o `SimuladoSpec`, o Supabase, a regra
+de não mandar gabarito ao browser.
+
+**Como o banco foi feito:** `scripts/banco/extrair_questoes.py` lê os PDFs oficiais
+(`data/banco/fontes.json`), recorta cada questão da página (seguindo colunas e páginas) e
+lê o gabarito. Ver `data/banco/README.md`.
+
+**Classificação:** Matemática tem assunto questão a questão (estudo do `indahouse-crm`);
+Linguagens, Humanas e Natureza têm disciplina. O simulado usa a proporção por assunto em
+MT e por disciplina no resto, até a classificação por assunto ser feita (etapa própria,
+com revisão).
+
+O resto deste documento descreve o plano original de geração. Vale como registro e
+material de aula.
+
+---
+
 ## 1. O que estamos construindo
 
 Um back-end em n8n que recebe um pedido de simulado (por chat ou por webhook), monta um
