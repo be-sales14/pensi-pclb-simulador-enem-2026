@@ -12,3 +12,4 @@ sql/seed_pesos.sql
 # Banco de questoes reais: PDFs de origem e imagens recortadas ficam fora do git
 data/fontes/
 data/banco/img/
+data/banco/imagens_s3.json
