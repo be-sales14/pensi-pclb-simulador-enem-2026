@@ -25,8 +25,8 @@ linhas = [
     "",
     "begin;",
     "",
-    "truncate table pesos_incidencia, pesos_disciplina;",
-    "",
+    "-- Upsert, nao truncate: questoes_enem referencia estas tabelas, e truncate quebraria",
+    "-- (ou, com cascade, apagaria o banco de questoes).",
     "insert into pesos_disciplina",
     "  (area, disciplina, peso, slots_em_45, faixa_min, faixa_max, confianca, fonte)",
     "values",
@@ -40,7 +40,10 @@ for area, discs in d["divisao_disciplinas"].items():
             f"  ({q(area)}, {q(x['disciplina'])}, {q(x['peso'])}, {q(x['slots_em_45'])}, "
             f"{q(faixa[0])}, {q(faixa[1])}, {q(x['confianca'])}, {q(x.get('fonte'))})"
         )
-linhas.append(",\n".join(vals) + ";")
+linhas.append(",\n".join(vals))
+linhas.append("on conflict (area, disciplina) do update set peso = excluded.peso, slots_em_45 = excluded.slots_em_45,")
+linhas.append("  faixa_min = excluded.faixa_min, faixa_max = excluded.faixa_max, confianca = excluded.confianca,")
+linhas.append("  fonte = excluded.fonte, atualizado_em = now();")
 n_disc = len(vals)
 
 linhas += [
@@ -59,8 +62,14 @@ for a in d["assuntos"]:
         f"{q(a['confianca'])}, {q(a.get('fator_texto', 1.0))}, {q(fonte)})"
     )
 
-linhas.append(",\n".join(vals) + ";")
-linhas += ["", "commit;", ""]
+linhas.append(",\n".join(vals))
+linhas.append("on conflict (id) do update set area = excluded.area, disciplina = excluded.disciplina,")
+linhas.append("  assunto = excluded.assunto, peso = excluded.peso, slots_em_45 = excluded.slots_em_45,")
+linhas.append("  peso_recente = excluded.peso_recente, confianca = excluded.confianca,")
+linhas.append("  fator_texto = excluded.fator_texto, fonte = excluded.fonte, atualizado_em = now();")
+ids = ", ".join(q(a["id"]) for a in d["assuntos"])
+linhas += ["", "-- Assunto que saiu do JSON sai do banco (falha alto se alguma questao ainda o usa).",
+           f"delete from pesos_incidencia where id not in ({ids});", "", "commit;", ""]
 
 saida = RAIZ / "sql" / "seed_pesos.sql"
 saida.write_text("\n".join(linhas))

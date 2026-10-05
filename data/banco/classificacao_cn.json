@@ -1,0 +1,1892 @@
+{
+ "2019_D2_Q091": {
+  "disciplina": "Quimica",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "potenciais de redução e oxidação do alumínio"
+ },
+ "2019_D2_Q092": {
+  "disciplina": "Fisica",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "indução eletromagnética e aterramento da cerca"
+ },
+ "2019_D2_Q093": {
+  "disciplina": "Biologia",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "vacina e imunização ativa preventiva"
+ },
+ "2019_D2_Q094": {
+  "disciplina": "Fisica",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "isolamento térmico e trocas de calor"
+ },
+ "2019_D2_Q095": {
+  "disciplina": "Quimica",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "lei de Hess e entalpia de combustão"
+ },
+ "2019_D2_Q096": {
+  "disciplina": "Biologia",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "estratégias r e K, sucessão"
+ },
+ "2019_D2_Q097": {
+  "disciplina": "Biologia",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "relações ecológicas intraespecíficas, competição"
+ },
+ "2019_D2_Q098": {
+  "disciplina": "Fisica",
+  "secundaria": "Biologia",
+  "confianca": "baixa",
+  "motivo": "síntese aditiva de cores e cones"
+ },
+ "2019_D2_Q099": {
+  "disciplina": "Biologia",
+  "secundaria": "Quimica",
+  "confianca": "baixa",
+  "motivo": "ciclagem de nutrientes no solo"
+ },
+ "2019_D2_Q100": {
+  "disciplina": "Biologia",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "controle biológico de pragas"
+ },
+ "2019_D2_Q101": {
+  "disciplina": "Biologia",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "hemácias e transporte de oxigênio"
+ },
+ "2019_D2_Q102": {
+  "disciplina": "Fisica",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "condução térmica e calor latente"
+ },
+ "2019_D2_Q103": {
+  "disciplina": "Quimica",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "reações de oxirredução"
+ },
+ "2019_D2_Q104": {
+  "disciplina": "Quimica",
+  "secundaria": "Biologia",
+  "confianca": "baixa",
+  "motivo": "tratamento de efluentes contra fármacos residuais"
+ },
+ "2019_D2_Q105": {
+  "disciplina": "Quimica",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "teste de chama, transição eletrônica"
+ },
+ "2019_D2_Q106": {
+  "disciplina": "Fisica",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "equilíbrio de forças e tração"
+ },
+ "2019_D2_Q107": {
+  "disciplina": "Biologia",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "resposta de animais à luz"
+ },
+ "2019_D2_Q108": {
+  "disciplina": "Quimica",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "estrutura de Lewis, octeto expandido"
+ },
+ "2019_D2_Q109": {
+  "disciplina": "Fisica",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "velocidade angular e movimento relativo"
+ },
+ "2019_D2_Q110": {
+  "disciplina": "Biologia",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "genes ligados no mesmo cromossomo"
+ },
+ "2019_D2_Q111": {
+  "disciplina": "Fisica",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "impulso e quantidade de movimento"
+ },
+ "2019_D2_Q112": {
+  "disciplina": "Quimica",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "forças intermoleculares e temperatura de ebulição"
+ },
+ "2019_D2_Q113": {
+  "disciplina": "Fisica",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "força magnética e movimento circular"
+ },
+ "2019_D2_Q114": {
+  "disciplina": "Biologia",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "retrovírus e antirretrovirais"
+ },
+ "2019_D2_Q115": {
+  "disciplina": "Quimica",
+  "secundaria": null,
+  "confianca": "baixa",
+  "motivo": "materiais e impacto ambiental da extração"
+ },
+ "2019_D2_Q116": {
+  "disciplina": "Biologia",
+  "secundaria": "Quimica",
+  "confianca": "baixa",
+  "motivo": "insaturação dos fosfolipídios e fluidez"
+ },
+ "2019_D2_Q117": {
+  "disciplina": "Fisica",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "calorimetria, calor sensível"
+ },
+ "2019_D2_Q118": {
+  "disciplina": "Quimica",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "pilha: espécie formada no ânodo"
+ },
+ "2019_D2_Q119": {
+  "disciplina": "Fisica",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "pressão, deformação e volume de ar"
+ },
+ "2019_D2_Q120": {
+  "disciplina": "Quimica",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "cadeia conjugada em compostos orgânicos"
+ },
+ "2019_D2_Q121": {
+  "disciplina": "Fisica",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "conservação de energia mecânica"
+ },
+ "2019_D2_Q122": {
+  "disciplina": "Quimica",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "catalisador em reação orgânica"
+ },
+ "2019_D2_Q123": {
+  "disciplina": "Biologia",
+  "secundaria": "Quimica",
+  "confianca": "baixa",
+  "motivo": "estrôncio substitui cálcio no osso"
+ },
+ "2019_D2_Q124": {
+  "disciplina": "Quimica",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "transesterificação e funções orgânicas"
+ },
+ "2019_D2_Q125": {
+  "disciplina": "Biologia",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "evolução das plantas, embrião protegido"
+ },
+ "2019_D2_Q126": {
+  "disciplina": "Fisica",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "associação de resistores e tensão"
+ },
+ "2019_D2_Q127": {
+  "disciplina": "Biologia",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "cadeia respiratória e fosforilação oxidativa"
+ },
+ "2019_D2_Q128": {
+  "disciplina": "Quimica",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "modelos atômicos e postulados de Dalton"
+ },
+ "2019_D2_Q129": {
+  "disciplina": "Quimica",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "titulação ácido-base, estequiometria"
+ },
+ "2019_D2_Q130": {
+  "disciplina": "Biologia",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "transporte por difusão através de membrana"
+ },
+ "2019_D2_Q131": {
+  "disciplina": "Fisica",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "geometria do campo de visão e velocidade"
+ },
+ "2019_D2_Q132": {
+  "disciplina": "Fisica",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "difração da luz na pupila"
+ },
+ "2019_D2_Q133": {
+  "disciplina": "Biologia",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "excreção renal de ureia"
+ },
+ "2019_D2_Q134": {
+  "disciplina": "Quimica",
+  "secundaria": "Fisica",
+  "confianca": "baixa",
+  "motivo": "capilaridade e forças intermoleculares"
+ },
+ "2019_D2_Q135": {
+  "disciplina": "Fisica",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "modelos ondulatório e corpuscular da luz"
+ },
+ "2020_D2_Q091": {
+  "disciplina": "Fisica",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "eletrização por atrito, transferência de elétrons"
+ },
+ "2020_D2_Q092": {
+  "disciplina": "Quimica",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "polímeros biodegradáveis e tempo de degradação"
+ },
+ "2020_D2_Q093": {
+  "disciplina": "Fisica",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "ligação do amperímetro e corrente"
+ },
+ "2020_D2_Q094": {
+  "disciplina": "Quimica",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "cadeia carbônica insaturada e função álcool"
+ },
+ "2020_D2_Q095": {
+  "disciplina": "Biologia",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "fragmentação de hábitats e corredores ecológicos"
+ },
+ "2020_D2_Q096": {
+  "disciplina": "Quimica",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "cinética, meia-vida e concentração molar"
+ },
+ "2020_D2_Q097": {
+  "disciplina": "Biologia",
+  "secundaria": "Quimica",
+  "confianca": "baixa",
+  "motivo": "ciclo biogeoquímico do carbono"
+ },
+ "2020_D2_Q098": {
+  "disciplina": "Fisica",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "lei de Faraday, variação do fluxo"
+ },
+ "2020_D2_Q099": {
+  "disciplina": "Fisica",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "cinemática, MUV e MU"
+ },
+ "2020_D2_Q100": {
+  "disciplina": "Quimica",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "decomposição do PVC e liberação de HCl"
+ },
+ "2020_D2_Q101": {
+  "disciplina": "Biologia",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "especiação e isolamento reprodutivo"
+ },
+ "2020_D2_Q102": {
+  "disciplina": "Quimica",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "extração por solvente e polaridade"
+ },
+ "2020_D2_Q103": {
+  "disciplina": "Quimica",
+  "secundaria": "Biologia",
+  "confianca": "baixa",
+  "motivo": "acidificação da água por CO2"
+ },
+ "2020_D2_Q104": {
+  "disciplina": "Biologia",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "impermeabilização das penas das aves"
+ },
+ "2020_D2_Q105": {
+  "disciplina": "Fisica",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "termodinâmica do refrigerador, condensador"
+ },
+ "2020_D2_Q106": {
+  "disciplina": "Fisica",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "pressão hidrostática e variação de pressão"
+ },
+ "2020_D2_Q107": {
+  "disciplina": "Fisica",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "pressão, escala linear e massa"
+ },
+ "2020_D2_Q108": {
+  "disciplina": "Biologia",
+  "secundaria": "Quimica",
+  "confianca": "baixa",
+  "motivo": "digestão gástrica e revestimento entérico"
+ },
+ "2020_D2_Q109": {
+  "disciplina": "Fisica",
+  "secundaria": "Quimica",
+  "confianca": "baixa",
+  "motivo": "temperatura de ebulição constante sob pressão"
+ },
+ "2020_D2_Q110": {
+  "disciplina": "Quimica",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "superfície de contato e velocidade de reação"
+ },
+ "2020_D2_Q111": {
+  "disciplina": "Fisica",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "interferência destrutiva de ondas"
+ },
+ "2020_D2_Q112": {
+  "disciplina": "Quimica",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "deslocamento de equilíbrio com temperatura"
+ },
+ "2020_D2_Q113": {
+  "disciplina": "Fisica",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "lançamento horizontal e trajetória parabólica"
+ },
+ "2020_D2_Q114": {
+  "disciplina": "Fisica",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "ressonância em tubo sonoro fechado"
+ },
+ "2020_D2_Q115": {
+  "disciplina": "Biologia",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "transgenia em plantas"
+ },
+ "2020_D2_Q116": {
+  "disciplina": "Fisica",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "divisor de tensão e lei de Ohm"
+ },
+ "2020_D2_Q117": {
+  "disciplina": "Biologia",
+  "secundaria": "Fisica",
+  "confianca": "baixa",
+  "motivo": "anticorpos e luz infravermelha"
+ },
+ "2020_D2_Q118": {
+  "disciplina": "Biologia",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "exoesqueleto de quitina em artrópodes"
+ },
+ "2020_D2_Q119": {
+  "disciplina": "Biologia",
+  "secundaria": "Quimica",
+  "confianca": "baixa",
+  "motivo": "decomposição aeróbica, OD e DBO"
+ },
+ "2020_D2_Q120": {
+  "disciplina": "Quimica",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "estequiometria da combustão do etanol"
+ },
+ "2020_D2_Q121": {
+  "disciplina": "Biologia",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "espectro de absorção na fotossíntese"
+ },
+ "2020_D2_Q122": {
+  "disciplina": "Quimica",
+  "secundaria": "Fisica",
+  "confianca": "baixa",
+  "motivo": "comparação de densidades e flutuação"
+ },
+ "2020_D2_Q123": {
+  "disciplina": "Quimica",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "separação de misturas, decantação"
+ },
+ "2020_D2_Q124": {
+  "disciplina": "Quimica",
+  "secundaria": "Biologia",
+  "confianca": "baixa",
+  "motivo": "hidrofobicidade e densidade do petróleo"
+ },
+ "2020_D2_Q125": {
+  "disciplina": "Biologia",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "Hardy-Weinberg no sistema ABO"
+ },
+ "2020_D2_Q126": {
+  "disciplina": "Quimica",
+  "secundaria": "Fisica",
+  "confianca": "baixa",
+  "motivo": "fissão nuclear do urânio"
+ },
+ "2020_D2_Q127": {
+  "disciplina": "Biologia",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "sucessão ecológica e plantas pioneiras"
+ },
+ "2020_D2_Q128": {
+  "disciplina": "Fisica",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "calorimetria, potência e calor específico"
+ },
+ "2020_D2_Q129": {
+  "disciplina": "Biologia",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "interpretação de ensaio com células"
+ },
+ "2020_D2_Q130": {
+  "disciplina": "Fisica",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "radiação infravermelha e aquecimento"
+ },
+ "2020_D2_Q131": {
+  "disciplina": "Quimica",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "química verde e economia atômica"
+ },
+ "2020_D2_Q132": {
+  "disciplina": "Quimica",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "metais pesados e gases poluentes"
+ },
+ "2020_D2_Q133": {
+  "disciplina": "Fisica",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "blindagem eletrostática, gaiola de Faraday"
+ },
+ "2020_D2_Q134": {
+  "disciplina": "Quimica",
+  "secundaria": "Fisica",
+  "confianca": "baixa",
+  "motivo": "densidade por deslocamento de volume"
+ },
+ "2020_D2_Q135": {
+  "disciplina": "Biologia",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "poliploidia e não disjunção meiótica"
+ },
+ "2021_D2_Q091": {
+  "disciplina": "Quimica",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "correção de pH com base"
+ },
+ "2021_D2_Q092": {
+  "disciplina": "Fisica",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "frequência fundamental e velocidade do som"
+ },
+ "2021_D2_Q093": {
+  "disciplina": "Biologia",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "seleção natural e mimetismo"
+ },
+ "2021_D2_Q094": {
+  "disciplina": "Fisica",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "lançamento oblíquo de projéteis"
+ },
+ "2021_D2_Q095": {
+  "disciplina": "Quimica",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "meia-vida e decaimento de massa"
+ },
+ "2021_D2_Q096": {
+  "disciplina": "Biologia",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "código genético e códon de parada"
+ },
+ "2021_D2_Q097": {
+  "disciplina": "Quimica",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "reação de saponificação"
+ },
+ "2021_D2_Q098": {
+  "disciplina": "Biologia",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "circulação fetal e circulação comparada"
+ },
+ "2021_D2_Q099": {
+  "disciplina": "Fisica",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "irradiação e convecção térmica"
+ },
+ "2021_D2_Q100": {
+  "disciplina": "Fisica",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "resistência do ar na queda"
+ },
+ "2021_D2_Q101": {
+  "disciplina": "Quimica",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "estequiometria da fermentação alcoólica"
+ },
+ "2021_D2_Q102": {
+  "disciplina": "Fisica",
+  "secundaria": "Quimica",
+  "confianca": "alta",
+  "motivo": "circuito equivalente de pilhas em série"
+ },
+ "2021_D2_Q103": {
+  "disciplina": "Quimica",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "análise química do ácido acetilsalicílico"
+ },
+ "2021_D2_Q104": {
+  "disciplina": "Biologia",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "magnificação trófica na cadeia alimentar"
+ },
+ "2021_D2_Q105": {
+  "disciplina": "Fisica",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "força magnética sobre cargas em movimento"
+ },
+ "2021_D2_Q106": {
+  "disciplina": "Quimica",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "isomeria geométrica"
+ },
+ "2021_D2_Q107": {
+  "disciplina": "Fisica",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "potência e variação de energia cinética"
+ },
+ "2021_D2_Q108": {
+  "disciplina": "Fisica",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "astronomia, densidade e distância planetária"
+ },
+ "2021_D2_Q109": {
+  "disciplina": "Fisica",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "segunda lei de Ohm, resistividade"
+ },
+ "2021_D2_Q110": {
+  "disciplina": "Biologia",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "fermentação gera combustíveis como metano"
+ },
+ "2021_D2_Q111": {
+  "disciplina": "Biologia",
+  "secundaria": "Quimica",
+  "confianca": "baixa",
+  "motivo": "educação ambiental e coleta seletiva"
+ },
+ "2021_D2_Q112": {
+  "disciplina": "Biologia",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "consanguinidade e mapeamento genético"
+ },
+ "2021_D2_Q113": {
+  "disciplina": "Quimica",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "redução do cobre, número de oxidação"
+ },
+ "2021_D2_Q114": {
+  "disciplina": "Biologia",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "arco reflexo medular"
+ },
+ "2021_D2_Q115": {
+  "disciplina": "Fisica",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "condução térmica, lei de Fourier"
+ },
+ "2021_D2_Q116": {
+  "disciplina": "Quimica",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "acidez de fenol, Brönsted-Lowry"
+ },
+ "2021_D2_Q117": {
+  "disciplina": "Quimica",
+  "secundaria": "Biologia",
+  "confianca": "alta",
+  "motivo": "biogás de dejetos, biocombustíveis"
+ },
+ "2021_D2_Q118": {
+  "disciplina": "Biologia",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "ciclo de vida do mosquito, larva"
+ },
+ "2021_D2_Q119": {
+  "disciplina": "Biologia",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "anatomia vegetal, cerne e esclerênquima"
+ },
+ "2021_D2_Q120": {
+  "disciplina": "Fisica",
+  "secundaria": "Quimica",
+  "confianca": "baixa",
+  "motivo": "absorção de luz e cores complementares"
+ },
+ "2021_D2_Q121": {
+  "disciplina": "Biologia",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "coevolução patógeno-hospedeiro"
+ },
+ "2021_D2_Q122": {
+  "disciplina": "Quimica",
+  "secundaria": "Biologia",
+  "confianca": "baixa",
+  "motivo": "decantação do lodo no tratamento"
+ },
+ "2021_D2_Q123": {
+  "disciplina": "Biologia",
+  "secundaria": null,
+  "confianca": "baixa",
+  "motivo": "auxinas e enraizamento na estaquia"
+ },
+ "2021_D2_Q124": {
+  "disciplina": "Quimica",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "células de combustível e eletrólitos"
+ },
+ "2021_D2_Q125": {
+  "disciplina": "Fisica",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "evaporação do suor com ar úmido"
+ },
+ "2021_D2_Q126": {
+  "disciplina": "Fisica",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "circuito com interruptores e lâmpadas"
+ },
+ "2021_D2_Q127": {
+  "disciplina": "Biologia",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "dispersão de sementes por animais"
+ },
+ "2021_D2_Q128": {
+  "disciplina": "Fisica",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "energia elétrica, potência e tempo"
+ },
+ "2021_D2_Q129": {
+  "disciplina": "Biologia",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "dupla fecundação e endosperma"
+ },
+ "2021_D2_Q130": {
+  "disciplina": "Quimica",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "classificação de cadeia carbônica saturada"
+ },
+ "2021_D2_Q131": {
+  "disciplina": "Fisica",
+  "secundaria": "Biologia",
+  "confianca": "baixa",
+  "motivo": "frequência cardíaca a partir do período"
+ },
+ "2021_D2_Q132": {
+  "disciplina": "Biologia",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "herança autossômica recessiva"
+ },
+ "2021_D2_Q133": {
+  "disciplina": "Quimica",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "potencial de pilha e associação de baterias"
+ },
+ "2021_D2_Q134": {
+  "disciplina": "Fisica",
+  "secundaria": "Quimica",
+  "confianca": "baixa",
+  "motivo": "dilatação térmica dos líquidos"
+ },
+ "2021_D2_Q135": {
+  "disciplina": "Quimica",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "polímero condutor, duplas conjugadas"
+ },
+ "2022_D2_Q091": {
+  "disciplina": "Quimica",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "reações de oxirredução na remediação"
+ },
+ "2022_D2_Q092": {
+  "disciplina": "Biologia",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "controle de vetores de parasitoses"
+ },
+ "2022_D2_Q093": {
+  "disciplina": "Fisica",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "potência, irradiância e eficiência"
+ },
+ "2022_D2_Q094": {
+  "disciplina": "Quimica",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "reatividade química e incompatibilidade de substâncias"
+ },
+ "2022_D2_Q095": {
+  "disciplina": "Fisica",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "campo magnético de fio retilíneo"
+ },
+ "2022_D2_Q096": {
+  "disciplina": "Fisica",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "associação de baterias e corrente"
+ },
+ "2022_D2_Q097": {
+  "disciplina": "Quimica",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "separação de misturas por centrifugação"
+ },
+ "2022_D2_Q098": {
+  "disciplina": "Biologia",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "terapia gênica com vetor viral"
+ },
+ "2022_D2_Q099": {
+  "disciplina": "Biologia",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "espécies exóticas invasoras e competição"
+ },
+ "2022_D2_Q100": {
+  "disciplina": "Fisica",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "lançamento horizontal e vertical"
+ },
+ "2022_D2_Q101": {
+  "disciplina": "Quimica",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "cinética, lei de velocidade da deterioração"
+ },
+ "2022_D2_Q102": {
+  "disciplina": "Biologia",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "PCR e transcrição reversa"
+ },
+ "2022_D2_Q103": {
+  "disciplina": "Fisica",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "forças sobre corpo em equilíbrio"
+ },
+ "2022_D2_Q104": {
+  "disciplina": "Biologia",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "eritropoietina e transporte de oxigênio"
+ },
+ "2022_D2_Q105": {
+  "disciplina": "Fisica",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "impulso, força e energia em colisão"
+ },
+ "2022_D2_Q106": {
+  "disciplina": "Quimica",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "ionização de grupos funcionais e pH"
+ },
+ "2022_D2_Q107": {
+  "disciplina": "Quimica",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "catálise ácida e velocidade de reação"
+ },
+ "2022_D2_Q108": {
+  "disciplina": "Quimica",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "titulação ácido-base, concentração"
+ },
+ "2022_D2_Q109": {
+  "disciplina": "Quimica",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "meia-vida e decaimento radioativo"
+ },
+ "2022_D2_Q110": {
+  "disciplina": "Biologia",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "estratégias reprodutivas de anfíbios"
+ },
+ "2022_D2_Q111": {
+  "disciplina": "Fisica",
+  "secundaria": null,
+  "confianca": "baixa",
+  "motivo": "incidência solar e estações do ano"
+ },
+ "2022_D2_Q112": {
+  "disciplina": "Fisica",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "força centrípeta e tração na corda"
+ },
+ "2022_D2_Q113": {
+  "disciplina": "Quimica",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "corrosão e proteção por barreira"
+ },
+ "2022_D2_Q114": {
+  "disciplina": "Biologia",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "osmose em célula vegetal"
+ },
+ "2022_D2_Q115": {
+  "disciplina": "Fisica",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "calor específico e calorimetria"
+ },
+ "2022_D2_Q116": {
+  "disciplina": "Fisica",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "potência elétrica, calor e disjuntor"
+ },
+ "2022_D2_Q117": {
+  "disciplina": "Quimica",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "reação de ácido com carbonato"
+ },
+ "2022_D2_Q118": {
+  "disciplina": "Biologia",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "hormônios sexuais, testosterona"
+ },
+ "2022_D2_Q119": {
+  "disciplina": "Fisica",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "pilhas em série com resistência interna"
+ },
+ "2022_D2_Q120": {
+  "disciplina": "Biologia",
+  "secundaria": "Quimica",
+  "confianca": "alta",
+  "motivo": "enzima e desnaturação por temperatura"
+ },
+ "2022_D2_Q121": {
+  "disciplina": "Biologia",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "diferenças entre células procarióticas e eucarióticas"
+ },
+ "2022_D2_Q122": {
+  "disciplina": "Biologia",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "coagulação sanguínea e trombos"
+ },
+ "2022_D2_Q123": {
+  "disciplina": "Fisica",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "gravitação, órbitas dependem da massa"
+ },
+ "2022_D2_Q124": {
+  "disciplina": "Quimica",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "ozônio como agente oxidante"
+ },
+ "2022_D2_Q125": {
+  "disciplina": "Biologia",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "inativação do X e expressividade variável"
+ },
+ "2022_D2_Q126": {
+  "disciplina": "Quimica",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "tratamento de água, decantação"
+ },
+ "2022_D2_Q127": {
+  "disciplina": "Biologia",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "fosforilação oxidativa e ATP sintase"
+ },
+ "2022_D2_Q128": {
+  "disciplina": "Fisica",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "lei de Ohm e resistência"
+ },
+ "2022_D2_Q129": {
+  "disciplina": "Quimica",
+  "secundaria": "Biologia",
+  "confianca": "alta",
+  "motivo": "equilíbrio ácido-base no ciclo do nitrogênio"
+ },
+ "2022_D2_Q130": {
+  "disciplina": "Fisica",
+  "secundaria": "Biologia",
+  "confianca": "baixa",
+  "motivo": "intensidade luminosa e número de fótons"
+ },
+ "2022_D2_Q131": {
+  "disciplina": "Quimica",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "compostos aromáticos e anel benzênico"
+ },
+ "2022_D2_Q132": {
+  "disciplina": "Biologia",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "Wolbachia e competição no vetor"
+ },
+ "2022_D2_Q133": {
+  "disciplina": "Biologia",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "resposta imune a antígenos"
+ },
+ "2022_D2_Q134": {
+  "disciplina": "Fisica",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "velocidade do som em meios diferentes"
+ },
+ "2022_D2_Q135": {
+  "disciplina": "Fisica",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "refração da luz na garrafa"
+ },
+ "2023_D2_Q091": {
+  "disciplina": "Biologia",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "polinização e oferta de alimento"
+ },
+ "2023_D2_Q092": {
+  "disciplina": "Biologia",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "ferro na dieta e anemia"
+ },
+ "2023_D2_Q093": {
+  "disciplina": "Fisica",
+  "secundaria": "Quimica",
+  "confianca": "baixa",
+  "motivo": "energia nuclear sem combustível fóssil"
+ },
+ "2023_D2_Q094": {
+  "disciplina": "Quimica",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "dureza da água e sais de cálcio"
+ },
+ "2023_D2_Q095": {
+  "disciplina": "Biologia",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "músculo vermelho e metabolismo aeróbico"
+ },
+ "2023_D2_Q096": {
+  "disciplina": "Quimica",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "massa molar e hidratação de sal"
+ },
+ "2023_D2_Q097": {
+  "disciplina": "Biologia",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "hormônio vegetal etileno no amadurecimento"
+ },
+ "2023_D2_Q098": {
+  "disciplina": "Biologia",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "cloroplastos, fotossíntese e carboidratos"
+ },
+ "2023_D2_Q099": {
+  "disciplina": "Biologia",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "leishmaniose e transmissão por vetor"
+ },
+ "2023_D2_Q100": {
+  "disciplina": "Fisica",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "velocidade e aceleração no lançamento vertical"
+ },
+ "2023_D2_Q101": {
+  "disciplina": "Biologia",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "ciclo menstrual e regressão do corpo lúteo"
+ },
+ "2023_D2_Q102": {
+  "disciplina": "Quimica",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "oxidação de álcool secundário a cetona"
+ },
+ "2023_D2_Q103": {
+  "disciplina": "Biologia",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "tubo polínico e fecundação vegetal"
+ },
+ "2023_D2_Q104": {
+  "disciplina": "Quimica",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "deslocamento de equilíbrio químico"
+ },
+ "2023_D2_Q105": {
+  "disciplina": "Biologia",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "floema e nutrição das raízes"
+ },
+ "2023_D2_Q106": {
+  "disciplina": "Biologia",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "vacina de RNAm e tradução"
+ },
+ "2023_D2_Q107": {
+  "disciplina": "Biologia",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "enzimas do acrossomo na fecundação"
+ },
+ "2023_D2_Q108": {
+  "disciplina": "Fisica",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "indução eletromagnética, campo variável"
+ },
+ "2023_D2_Q109": {
+  "disciplina": "Fisica",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "polias fixas e móveis"
+ },
+ "2023_D2_Q110": {
+  "disciplina": "Quimica",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "estequiometria e reagente limitante"
+ },
+ "2023_D2_Q111": {
+  "disciplina": "Fisica",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "amplitude e atenuação da onda sonora"
+ },
+ "2023_D2_Q112": {
+  "disciplina": "Fisica",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "difração e comprimento de onda"
+ },
+ "2023_D2_Q113": {
+  "disciplina": "Fisica",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "intensidade de onda, potência por área"
+ },
+ "2023_D2_Q114": {
+  "disciplina": "Fisica",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "leis de Newton e tração"
+ },
+ "2023_D2_Q115": {
+  "disciplina": "Biologia",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "bioacumulação de metais em plantas"
+ },
+ "2023_D2_Q116": {
+  "disciplina": "Biologia",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "ciclo do nitrogênio e decompositores"
+ },
+ "2023_D2_Q117": {
+  "disciplina": "Fisica",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "dose de radiação, proporcionalidade"
+ },
+ "2023_D2_Q118": {
+  "disciplina": "Quimica",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "hidrocarbonetos ramificados e octanagem"
+ },
+ "2023_D2_Q119": {
+  "disciplina": "Quimica",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "equação dos gases ideais"
+ },
+ "2023_D2_Q120": {
+  "disciplina": "Fisica",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "associação mista de resistores"
+ },
+ "2023_D2_Q121": {
+  "disciplina": "Quimica",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "eletronegatividade e caráter iônico da ligação"
+ },
+ "2023_D2_Q122": {
+  "disciplina": "Fisica",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "calor latente de condensação e vaporização"
+ },
+ "2023_D2_Q123": {
+  "disciplina": "Quimica",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "isomeria óptica, carbono quiral"
+ },
+ "2023_D2_Q124": {
+  "disciplina": "Fisica",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "velocidade média e tempo de percurso"
+ },
+ "2023_D2_Q125": {
+  "disciplina": "Biologia",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "meiose e aneuploidia do cromossomo 21"
+ },
+ "2023_D2_Q126": {
+  "disciplina": "Quimica",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "sal de amina e caráter iônico"
+ },
+ "2023_D2_Q127": {
+  "disciplina": "Biologia",
+  "secundaria": "Quimica",
+  "confianca": "baixa",
+  "motivo": "bloqueio da cadeia respiratória e NADH"
+ },
+ "2023_D2_Q128": {
+  "disciplina": "Fisica",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "interferência de ondas de mesma frequência"
+ },
+ "2023_D2_Q129": {
+  "disciplina": "Quimica",
+  "secundaria": "Biologia",
+  "confianca": "alta",
+  "motivo": "baixa polaridade e solubilidade em gordura"
+ },
+ "2023_D2_Q130": {
+  "disciplina": "Fisica",
+  "secundaria": null,
+  "confianca": "baixa",
+  "motivo": "condutividade térmica de materiais"
+ },
+ "2023_D2_Q131": {
+  "disciplina": "Quimica",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "densidade de solução com açúcar dissolvido"
+ },
+ "2023_D2_Q132": {
+  "disciplina": "Fisica",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "transformação isovolumétrica de gás ideal"
+ },
+ "2023_D2_Q133": {
+  "disciplina": "Quimica",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "cadeia carbônica normal e biodegradabilidade"
+ },
+ "2023_D2_Q134": {
+  "disciplina": "Biologia",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "micronúcleos de fragmentos cromossômicos"
+ },
+ "2023_D2_Q135": {
+  "disciplina": "Fisica",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "velocidade de onda e eco"
+ },
+ "2024_D2_Q091": {
+  "disciplina": "Fisica",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "impulso e tempo de colisão"
+ },
+ "2024_D2_Q092": {
+  "disciplina": "Quimica",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "semirreações e equação global da pilha"
+ },
+ "2024_D2_Q093": {
+  "disciplina": "Quimica",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "conceito de composto orgânico"
+ },
+ "2024_D2_Q094": {
+  "disciplina": "Quimica",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "acidez de Brönsted-Lowry em grupos funcionais"
+ },
+ "2024_D2_Q095": {
+  "disciplina": "Biologia",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "RT-PCR e expressão gênica"
+ },
+ "2024_D2_Q096": {
+  "disciplina": "Fisica",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "centro de massa"
+ },
+ "2024_D2_Q097": {
+  "disciplina": "Quimica",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "concentração e massa molar"
+ },
+ "2024_D2_Q098": {
+  "disciplina": "Biologia",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "evolução reprodutiva dos mamíferos"
+ },
+ "2024_D2_Q099": {
+  "disciplina": "Fisica",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "efeito Doppler"
+ },
+ "2024_D2_Q100": {
+  "disciplina": "Fisica",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "espelhos côncavos e formação de imagem"
+ },
+ "2024_D2_Q101": {
+  "disciplina": "Fisica",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "nível sonoro em decibéis e distância"
+ },
+ "2024_D2_Q102": {
+  "disciplina": "Biologia",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "desnaturação enzimática pelo calor"
+ },
+ "2024_D2_Q103": {
+  "disciplina": "Fisica",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "transferência de calor por convecção"
+ },
+ "2024_D2_Q104": {
+  "disciplina": "Biologia",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "arboviroses, urbanização e saneamento"
+ },
+ "2024_D2_Q105": {
+  "disciplina": "Biologia",
+  "secundaria": "Quimica",
+  "confianca": "alta",
+  "motivo": "bioacumulação de lipossolúveis no tecido adiposo"
+ },
+ "2024_D2_Q106": {
+  "disciplina": "Fisica",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "absorção de raios X por materiais"
+ },
+ "2024_D2_Q107": {
+  "disciplina": "Biologia",
+  "secundaria": "Quimica",
+  "confianca": "alta",
+  "motivo": "digestão e ácido clorídrico no estômago"
+ },
+ "2024_D2_Q108": {
+  "disciplina": "Biologia",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "sucessão ecológica e biodiversidade"
+ },
+ "2024_D2_Q109": {
+  "disciplina": "Biologia",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "fibras musculares e metabolismo anaeróbio"
+ },
+ "2024_D2_Q110": {
+  "disciplina": "Biologia",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "mimetismo batesiano e predação"
+ },
+ "2024_D2_Q111": {
+  "disciplina": "Biologia",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "muda do exoesqueleto em artrópodes"
+ },
+ "2024_D2_Q112": {
+  "disciplina": "Biologia",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "herança recessiva ligada ao X"
+ },
+ "2024_D2_Q113": {
+  "disciplina": "Quimica",
+  "secundaria": "Biologia",
+  "confianca": "baixa",
+  "motivo": "oxidação nos ciclos biogeoquímicos"
+ },
+ "2024_D2_Q114": {
+  "disciplina": "Quimica",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "gases de combustão, leitura de gráfico"
+ },
+ "2024_D2_Q115": {
+  "disciplina": "Biologia",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "citoesqueleto e microfilamentos"
+ },
+ "2024_D2_Q116": {
+  "disciplina": "Quimica",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "separação de mistura por filtração"
+ },
+ "2024_D2_Q117": {
+  "disciplina": "Biologia",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "comportamento reprodutivo de anfíbios"
+ },
+ "2024_D2_Q118": {
+  "disciplina": "Quimica",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "equilíbrio químico de desmineralização"
+ },
+ "2024_D2_Q119": {
+  "disciplina": "Fisica",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "composição vetorial de velocidades"
+ },
+ "2024_D2_Q120": {
+  "disciplina": "Biologia",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "proliferação de linfócitos e câncer"
+ },
+ "2024_D2_Q121": {
+  "disciplina": "Fisica",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "inércia e lançamento sob gravidade"
+ },
+ "2024_D2_Q122": {
+  "disciplina": "Fisica",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "temperatura e mudança de estado"
+ },
+ "2024_D2_Q123": {
+  "disciplina": "Quimica",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "identificação de função orgânica"
+ },
+ "2024_D2_Q124": {
+  "disciplina": "Biologia",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "metabolismo aeróbio e anaeróbio bacteriano"
+ },
+ "2024_D2_Q125": {
+  "disciplina": "Quimica",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "transições eletrônicas e fosforescência"
+ },
+ "2024_D2_Q126": {
+  "disciplina": "Biologia",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "vacina e produção de anticorpos"
+ },
+ "2024_D2_Q127": {
+  "disciplina": "Fisica",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "linhas de campo elétrico"
+ },
+ "2024_D2_Q128": {
+  "disciplina": "Quimica",
+  "secundaria": "Fisica",
+  "confianca": "baixa",
+  "motivo": "interação elétrons e cátions gera ddp"
+ },
+ "2024_D2_Q129": {
+  "disciplina": "Fisica",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "potência, calor e rendimento"
+ },
+ "2024_D2_Q130": {
+  "disciplina": "Fisica",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "ciclo termodinâmico de Otto"
+ },
+ "2024_D2_Q131": {
+  "disciplina": "Fisica",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "circuito com LED, tensão e corrente"
+ },
+ "2024_D2_Q132": {
+  "disciplina": "Fisica",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "circuito elétrico e tensão nas lâmpadas"
+ },
+ "2024_D2_Q133": {
+  "disciplina": "Quimica",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "estequiometria e massa molar"
+ },
+ "2024_D2_Q134": {
+  "disciplina": "Biologia",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "fitorremediação por fitoextração"
+ },
+ "2024_D2_Q135": {
+  "disciplina": "Quimica",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "estequiometria e proporção de massa"
+ },
+ "2025_D2_Q091": {
+  "disciplina": "Fisica",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "transferência de calor por irradiação"
+ },
+ "2025_D2_Q092": {
+  "disciplina": "Biologia",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "toxina obtida pela alimentação natural"
+ },
+ "2025_D2_Q093": {
+  "disciplina": "Biologia",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "antígeno induz produção de anticorpos"
+ },
+ "2025_D2_Q094": {
+  "disciplina": "Biologia",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "espécies invasoras e competição"
+ },
+ "2025_D2_Q095": {
+  "disciplina": "Biologia",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "convergência adaptativa e bioma Caatinga"
+ },
+ "2025_D2_Q096": {
+  "disciplina": "Quimica",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "água destilada, purificação"
+ },
+ "2025_D2_Q097": {
+  "disciplina": "Biologia",
+  "secundaria": "Fisica",
+  "confianca": "baixa",
+  "motivo": "pupila dilatada e entrada de luz"
+ },
+ "2025_D2_Q098": {
+  "disciplina": "Biologia",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "toxina em vísceras e manuseio"
+ },
+ "2025_D2_Q099": {
+  "disciplina": "Biologia",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "lisossomos e enzimas digestivas"
+ },
+ "2025_D2_Q100": {
+  "disciplina": "Biologia",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "fotossíntese remove CO2 atmosférico"
+ },
+ "2025_D2_Q101": {
+  "disciplina": "Fisica",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "frequência e comprimento de onda"
+ },
+ "2025_D2_Q102": {
+  "disciplina": "Biologia",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "proporção fenotípica em cruzamento"
+ },
+ "2025_D2_Q103": {
+  "disciplina": "Fisica",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "força de atrito cinético"
+ },
+ "2025_D2_Q104": {
+  "disciplina": "Fisica",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "força elétrica sobre elétron em campo"
+ },
+ "2025_D2_Q105": {
+  "disciplina": "Fisica",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "ressonância e frequência sonora"
+ },
+ "2025_D2_Q106": {
+  "disciplina": "Quimica",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "oxidação de álcool secundário a cetona"
+ },
+ "2025_D2_Q107": {
+  "disciplina": "Quimica",
+  "secundaria": "Biologia",
+  "confianca": "alta",
+  "motivo": "solubilidade de gases e temperatura"
+ },
+ "2025_D2_Q108": {
+  "disciplina": "Quimica",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "fórmulas químicas e nomenclatura"
+ },
+ "2025_D2_Q109": {
+  "disciplina": "Quimica",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "reação orgânica de descarboxilação"
+ },
+ "2025_D2_Q110": {
+  "disciplina": "Quimica",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "meia-vida radioativa"
+ },
+ "2025_D2_Q111": {
+  "disciplina": "Biologia",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "eutrofização dos corpos d'água"
+ },
+ "2025_D2_Q112": {
+  "disciplina": "Biologia",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "vitamina A e cegueira noturna"
+ },
+ "2025_D2_Q113": {
+  "disciplina": "Fisica",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "associação de resistores em série"
+ },
+ "2025_D2_Q114": {
+  "disciplina": "Quimica",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "estequiometria com excesso de reagente"
+ },
+ "2025_D2_Q115": {
+  "disciplina": "Fisica",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "nível sonoro em decibéis"
+ },
+ "2025_D2_Q116": {
+  "disciplina": "Quimica",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "polaridade e interações intermoleculares"
+ },
+ "2025_D2_Q117": {
+  "disciplina": "Quimica",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "polaridade e ligações de hidrogênio"
+ },
+ "2025_D2_Q118": {
+  "disciplina": "Fisica",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "velocidade e intervalo de tempo"
+ },
+ "2025_D2_Q119": {
+  "disciplina": "Quimica",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "neutralização ácido-base da amina"
+ },
+ "2025_D2_Q120": {
+  "disciplina": "Fisica",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "indução eletromagnética e efeito Joule"
+ },
+ "2025_D2_Q121": {
+  "disciplina": "Biologia",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "fotossíntese e doador de elétrons"
+ },
+ "2025_D2_Q122": {
+  "disciplina": "Biologia",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "endemismo em ambientes extremos"
+ },
+ "2025_D2_Q123": {
+  "disciplina": "Quimica",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "deslocamento de equilíbrio químico"
+ },
+ "2025_D2_Q124": {
+  "disciplina": "Fisica",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "pressão exercida por coluna de material"
+ },
+ "2025_D2_Q125": {
+  "disciplina": "Fisica",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "associação de geradores não ideais"
+ },
+ "2025_D2_Q126": {
+  "disciplina": "Quimica",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "potencial padrão de oxirredução"
+ },
+ "2025_D2_Q127": {
+  "disciplina": "Quimica",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "estequiometria e gases ideais"
+ },
+ "2025_D2_Q128": {
+  "disciplina": "Fisica",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "decomposição de velocidades"
+ },
+ "2025_D2_Q129": {
+  "disciplina": "Quimica",
+  "secundaria": "Biologia",
+  "confianca": "baixa",
+  "motivo": "catalisador reduz energia de ativação"
+ },
+ "2025_D2_Q130": {
+  "disciplina": "Fisica",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "resistência elétrica e sensibilidade do sensor"
+ },
+ "2025_D2_Q131": {
+  "disciplina": "Biologia",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "controle do caramujo da esquistossomose"
+ },
+ "2025_D2_Q132": {
+  "disciplina": "Quimica",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "adsorção e superfície de contato"
+ },
+ "2025_D2_Q133": {
+  "disciplina": "Biologia",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "transgenia e genes transferidos"
+ },
+ "2025_D2_Q134": {
+  "disciplina": "Biologia",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "glândula uropigial e impermeabilização"
+ },
+ "2025_D2_Q135": {
+  "disciplina": "Fisica",
+  "secundaria": null,
+  "confianca": "alta",
+  "motivo": "potência, corrente e fusível"
+ }
+}

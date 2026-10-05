@@ -51,7 +51,7 @@ def linhas_por_pagina(pdf):
         h = Path(f.name).read_text(encoding="utf-8")
     paginas = []
     for w, hh, corpo in re.findall(r'<page width="([\d.]+)" height="([\d.]+)">(.*?)</page>', h, re.S):
-        linhas = []
+        linhas, ocultas = [], []
         for m in re.finditer(r'<line xMin="([\d.]+)" yMin="([\d.]+)" xMax="([\d.]+)" yMax="([\d.]+)">(.*?)</line>', corpo, re.S):
             palavras = [(tuple(map(float, w[:4])), html.unescape(w[4])) for w in re.findall(
                 r'<word xMin="([\d.]+)" yMin="([\d.]+)" xMax="([\d.]+)" yMax="([\d.]+)">([^<]*)</word>', m.group(5))]
@@ -68,6 +68,9 @@ def linhas_por_pagina(pdf):
             # colunas. Ela confundiria a deteccao de questao larga: fica de fora.
             controle = sum(1 for c in texto if ord(c) < 32 or 0x7f <= ord(c) < 0xa0)
             if texto and controle > 0.2 * len(texto):
+                # O texto e lixo, mas a caixa diz onde ha conteudo: serve para a largura da coluna.
+                ocultas.append({"x0": min(c[0] for c, _ in palavras), "x1": max(c[2] for c, _ in palavras),
+                                "y0": min(c[1] for c, _ in palavras), "y1": max(c[3] for c, _ in palavras)})
                 continue
             if texto:
                 x0 = min(c[0] for c, _ in palavras); x1 = max(c[2] for c, _ in palavras)
@@ -86,7 +89,7 @@ def linhas_por_pagina(pdf):
                     else:
                         linhas.remove(o)
                     break
-        paginas.append({"w": float(w), "h": float(hh), "linhas": linhas})
+        paginas.append({"w": float(w), "h": float(hh), "linhas": linhas, "ocultas": ocultas})
     return paginas
 
 
@@ -155,9 +158,13 @@ def celulas(img, pag):
     topo, base = zona_de_conteudo(pag, img)
     meio = pag["w"] / 2
     linhas = [l for l in pag["linhas"] if topo <= l["y0"] <= base and e_conteudo(l, pag)]
-    xs, xe = [l["x0"] for l in linhas], [l["x1"] for l in linhas]
+    caixas = linhas + [o for o in pag.get("ocultas", []) if topo <= o["y0"] <= base]
+    xs, xe = [l["x0"] for l in caixas], [l["x1"] for l in caixas]
     esq = max(15, min(xs) - 6) if xs else 25
     dir_ = min(pag["w"] - 15, max(xe) + 6) if xe else pag["w"] - 25
+    # Rede de seguranca: a pagina e simetrica; as margens nunca ficam mais estreitas que o espelho
+    # da outra (2021 tinha so marcador legivel na coluna direita e cortava a coluna em x=349).
+    dir_ = max(dir_, pag["w"] - esq)
     mks = sorted((l for l in linhas if MARCADOR.match(l["t"])), key=lambda l: l["y0"])
 
     def atravessa(l):

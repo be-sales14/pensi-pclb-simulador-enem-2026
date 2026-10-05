@@ -13,3 +13,4 @@ sql/seed_pesos.sql
 data/fontes/
 data/banco/img/
 data/banco/imagens_s3.json
+data/banco/carga/
