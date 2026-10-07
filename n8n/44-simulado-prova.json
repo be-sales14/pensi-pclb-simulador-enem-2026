@@ -1,0 +1,295 @@
+{
+  "name": "44-simulado-prova",
+  "nodes": [
+    {
+      "id": "483d1a47-9b62-5fe9-94e4-a3d7d589d000",
+      "name": "Formulario",
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.2,
+      "position": [
+        0,
+        -120
+      ],
+      "parameters": {
+        "formTitle": "Simulado ENEM",
+        "formDescription": "Questões reais do ENEM (2019 a 2025), na proporção da prova oficial. O simulado abre pronto para fazer ou salvar em PDF.",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Tipo de simulado",
+              "fieldType": "dropdown",
+              "requiredField": true,
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "Oficial completo (180 questões)"
+                  },
+                  {
+                    "option": "Oficial 1º dia: Linguagens e Humanas (90)"
+                  },
+                  {
+                    "option": "Oficial 2º dia: Natureza e Matemática (90)"
+                  },
+                  {
+                    "option": "Personalizado"
+                  }
+                ]
+              }
+            },
+            {
+              "fieldLabel": "Áreas (só no personalizado)",
+              "fieldType": "dropdown",
+              "multiselect": true,
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "Linguagens"
+                  },
+                  {
+                    "option": "Ciências Humanas"
+                  },
+                  {
+                    "option": "Ciências da Natureza"
+                  },
+                  {
+                    "option": "Matemática"
+                  }
+                ]
+              }
+            },
+            {
+              "fieldLabel": "Número de questões (só no personalizado)",
+              "fieldType": "number"
+            },
+            {
+              "fieldLabel": "Língua estrangeira",
+              "fieldType": "dropdown",
+              "requiredField": true,
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "Inglês"
+                  },
+                  {
+                    "option": "Espanhol"
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "webhookId": "36023c8e-a7ba-5061-a240-b55016570795"
+    },
+    {
+      "id": "a63b7772-afb9-5e33-9a74-dc52b519f0ef",
+      "name": "Link direto",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        0,
+        120
+      ],
+      "parameters": {
+        "httpMethod": "GET",
+        "path": "simulado-enem/prova",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "webhookId": "d38b749d-848d-57c6-9ac5-96d6b4ec12e5"
+    },
+    {
+      "id": "49c5ed94-f38d-5a96-a5ad-fb065f54dd5a",
+      "name": "Ler pedido",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        240,
+        0
+      ],
+      "parameters": {
+        "jsCode": "// Aceita o formulario do n8n ou o link direto (?tipo=oficial&dia=2, ?tipo=personalizado&areas=MT,CH&n=20).\nconst j = $input.first().json;\nconst AREA = { 'Linguagens': 'LC', 'Ciências Humanas': 'CH', 'Ciências da Natureza': 'CN', 'Matemática': 'MT' };\nlet pedido;\nif (j.query) {\n  const q = j.query;\n  pedido = { tipo: q.tipo, dia: q.dia, areas: q.areas, n_questoes: q.n, lingua: q.lingua, semente: q.semente };\n} else {\n  const tipo = String(j['Tipo de simulado'] ?? '');\n  const lingua = String(j['Língua estrangeira'] ?? 'Inglês') === 'Espanhol' ? 'espanhol' : 'ingles';\n  if (tipo.startsWith('Oficial')) {\n    pedido = { tipo: 'oficial', dia: tipo.includes('1º') ? 1 : tipo.includes('2º') ? 2 : null, lingua };\n  } else {\n    const areas = [].concat(j['Áreas (só no personalizado)'] ?? []).map(a => AREA[a]).filter(Boolean);\n    if (!areas.length) throw new Error('No personalizado, escolha pelo menos uma área.');\n    pedido = { tipo: 'personalizado', areas, n_questoes: j['Número de questões (só no personalizado)'], lingua };\n  }\n}\nreturn [{ json: { pedido } }];"
+      }
+    },
+    {
+      "id": "98bebdc5-8a39-508c-b8c2-f07a76449b3b",
+      "name": "Ler banco e pesos",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        460,
+        0
+      ],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "-- Pesos e banco vivem no Supabase (CLAUDE.md).\nselect (select json_agg(d) from public.pesos_disciplina d) as disciplinas,\n       (select json_agg(i) from public.pesos_incidencia i) as assuntos,\n       (select json_agg(json_build_object('id', q.id, 'ano', q.ano, 'area', q.area, 'lingua', q.lingua,\n               'anulada', q.anulada, 'disciplina', q.disciplina,\n               'disciplina_secundaria', q.disciplina_secundaria, 'assunto_id', q.assunto_id))\n          from public.questoes_enem q where not q.anulada) as banco;",
+        "options": {}
+      },
+      "credentials": {
+        "postgres": {
+          "id": "",
+          "name": "Supabase Postgres"
+        }
+      },
+      "executeOnce": true
+    },
+    {
+      "id": "39879109-92d4-57ee-8a4b-0fba52e9813a",
+      "name": "Montar simulado",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        680,
+        0
+      ],
+      "parameters": {
+        "jsCode": "// Agente 1 · Distribuidor, camadas 1 e 2 (rateio e viabilidade textual). Zero LLM.\n// Ver docs/03_DISTRIBUICAO_ENEM.md §7 e §8 e docs/05_RUBRICA_DIFICULDADE.md.\n//\n// Este arquivo e a fonte do no Code \"Rateio\" do 02-orquestrador. Nao edite o codigo\n// dentro do n8n: edite aqui, rode `node scripts/testar_distribuidor.js` e regenere o\n// workflow com `python3 scripts/montar_workflows.py`.\n\nconst AREAS = ['LC', 'CH', 'CN', 'MT'];\nconst INICIO_OFICIAL = { LC: 1, CH: 46, CN: 91, MT: 136 };\nconst NIVEL_ALVO = { facil: 2, medio: 5, dificil: 8 }; // centro de cada faixa da rubrica\nconst CURVA_PADRAO = { facil: 0.30, medio: 0.45, dificil: 0.25 };\nconst PISO_PESO = 5;       // assunto com >= 5% da area nunca fica com 0 slot...\nconst PISO_N_MINIMO = 20;  // ...em area com 20+ questoes\nconst N_PEQUENO = 10;      // abaixo disso, rateio por peso vira ruido\n\n// Maior resto (Hare). Fecha a conta exata; desempate estavel por resto, peso e id.\nfunction ratear(itens, total) {\n  if (itens.length === 0 || total === 0) return itens.map(p => ({ ...p, slots: 0 }));\n  const soma = itens.reduce((s, p) => s + p.peso, 0);\n  if (!(soma > 0)) throw new Error(`ratear: soma de pesos ${soma} para ${total} slots`);\n  const base = itens.map(p => {\n    const ideal = (p.peso / soma) * total;\n    return { ...p, ideal, slots: Math.floor(ideal) };\n  });\n  const resto = p => Math.round((p.ideal - Math.floor(p.ideal)) * 1e9) / 1e9;\n  const ordem = [...base].sort((a, b) =>\n    resto(b) - resto(a) || b.peso - a.peso || String(a.id).localeCompare(String(b.id)));\n  let faltam = total - base.reduce((s, p) => s + p.slots, 0);\n  for (let i = 0; faltam > 0; i = (i + 1) % ordem.length, faltam--) ordem[i].slots += 1;\n  return base;\n}\n\n// PRNG com semente: o mesmo spec sempre gera o mesmo blueprint.\nfunction prng(semente) {\n  let h = 2166136261;\n  for (const c of String(semente)) h = Math.imul(h ^ c.charCodeAt(0), 16777619);\n  return () => {\n    h = (h + 0x6D2B79F5) | 0;\n    let t = Math.imul(h ^ (h >>> 15), 1 | h);\n    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;\n    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;\n  };\n}\n\nconst normalizar = s => String(s).normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim();\n\n// Niveis de um assunto com k slots, pela curva (rubrica, secao \"Curva-alvo\").\nfunction niveis(k, spec, rnd) {\n  if (spec.nivel && spec.nivel !== 'misto') return Array(k).fill(spec.nivel);\n  const curva = spec.curva_dificuldade ?? CURVA_PADRAO;\n  const rotulos = ['facil', 'medio', 'dificil'];\n  const dominante = rotulos.reduce((a, b) => (curva[b] > curva[a] ? b : a));\n  if (k === 1) return [dominante];\n  if (k === 2) {\n    const outros = rotulos.filter(r => r !== dominante);\n    const soma = outros.reduce((s, r) => s + curva[r], 0);\n    return [dominante, rnd() * soma < curva[outros[0]] ? outros[0] : outros[1]];\n  }\n  return ratear(rotulos.map(r => ({ id: r, peso: curva[r] })), k)\n    .flatMap(r => Array(r.slots).fill(r.id));\n}\n\n// Rateio de uma area em dois niveis: area -> disciplina -> assunto.\n// comTexto=false da o ALVO (distribuicao real); comTexto=true da o ENTREGUE (so texto).\nfunction ratearArea(total, discs, assuntosPorDisc, oficial, comTexto) {\n  const fatorMedio = d => {\n    const as = assuntosPorDisc[d.disciplina];\n    const soma = as.reduce((s, a) => s + a.pesoBase, 0);\n    return soma > 0 ? as.reduce((s, a) => s + a.pesoBase * a.fator, 0) / soma : 1;\n  };\n  // Lingua estrangeira e fixada pelo edital: nao encolhe com fator_texto.\n  const fixas = discs.filter(d => d.confianca === 'edital' && oficial);\n  const livres = discs.filter(d => !fixas.includes(d));\n  const totalLivre = total - fixas.reduce((s, d) => s + d.slots_em_45, 0);\n  const porDisc = [\n    ...fixas.map(d => ({ ...d, slots: d.slots_em_45 })),\n    ...ratear(livres.map(d => ({\n      ...d, id: d.disciplina,\n      peso: d.slots_em_45 * (comTexto ? fatorMedio(d) : 1),\n    })), totalLivre),\n  ];\n  return porDisc.flatMap(d => {\n    const fixa = d.confianca === 'edital' && oficial;\n    return ratear(assuntosPorDisc[d.disciplina].map(a => ({\n      ...a, peso: a.pesoBase * (comTexto && !fixa ? a.fator : 1),\n    })), d.slots);\n  });\n}\n\nfunction distribuir(spec, pesosDisciplina, pesosIncidencia) {\n  const oficial = spec.tipo === 'oficial';\n  const n = oficial ? 180 : Number(spec.n_questoes);\n  if (!oficial && !(Number.isInteger(n) && n >= 1 && n <= 180))\n    throw new Error(`n_questoes invalido: ${spec.n_questoes} (1 a 180)`);\n  const areas = oficial ? AREAS : AREAS.filter(a => (spec.areas ?? []).includes(a));\n  if (areas.length === 0) throw new Error('nenhuma area valida no spec');\n\n  // Filtros do personalizado. Assunto aceita id ('MT.funcoes') ou nome, sem acento.\n  const filtroDisc = new Set((oficial ? [] : spec.disciplinas ?? []).map(normalizar));\n  const filtroAss = new Set((oficial ? [] : spec.assuntos ?? []).map(normalizar));\n  const conhecidos = new Set(pesosIncidencia.flatMap(a => [normalizar(a.id), normalizar(a.assunto)]));\n  const desconhecidos = [...filtroAss].filter(x => !conhecidos.has(x));\n  if (desconhecidos.length) throw new Error(`assunto fora de pesos_incidencia: ${desconhecidos.join(', ')}`);\n\n  const pesoDe = a => Number(!oficial && spec.enfase === 'recente' && a.peso_recente != null\n    ? a.peso_recente : a.peso);\n\n  const totaisArea = oficial\n    ? Object.fromEntries(areas.map(a => [a, 45]))\n    : Object.fromEntries(ratear(areas.map(a => ({ id: a, peso: 1 })), n).map(a => [a.id, a.slots]));\n\n  const alvo = [], entregue = [];\n  for (const area of areas) {\n    const total = totaisArea[area];\n    let candidatos = pesosIncidencia.filter(a => a.area === area)\n      .filter(a => filtroDisc.size === 0 || filtroDisc.has(normalizar(a.disciplina)))\n      .filter(a => filtroAss.size === 0 || filtroAss.has(normalizar(a.id)) || filtroAss.has(normalizar(a.assunto)))\n      .map(a => ({\n        ...a, id: a.id, peso_bruto: pesoDe(a), fator: Number(a.fator_texto ?? 1),\n        pesoBase: oficial ? Number(a.slots_em_45) : pesoDe(a),\n      }));\n    if (candidatos.length === 0) throw new Error(`nenhum assunto candidato na area ${area}`);\n\n    const discs = pesosDisciplina.filter(d => d.area === area &&\n      candidatos.some(a => a.disciplina === d.disciplina)).map(d => ({ ...d, slots_em_45: Number(d.slots_em_45) }));\n    const porDisc = Object.fromEntries(discs.map(d =>\n      [d.disciplina, candidatos.filter(a => a.disciplina === d.disciplina)]));\n\n    // Peso do assunto na area inteira, em %: participacao da disciplina x do assunto nela.\n    const somaDisc = discs.reduce((s, d) => s + d.slots_em_45, 0);\n    for (const d of discs) {\n      const soma = porDisc[d.disciplina].reduce((s, a) => s + a.pesoBase, 0);\n      for (const a of porDisc[d.disciplina])\n        a.peso_area = soma > 0 ? 100 * (d.slots_em_45 / somaDisc) * (a.pesoBase / soma) : 0;\n    }\n\n    let a1, a2;\n    if (!oficial && total < N_PEQUENO) {\n      // Poucas questoes: assuntos pedidos em partes iguais; senao os de maior peso, 1 cada.\n      if (filtroAss.size > 0) {\n        a1 = a2 = ratear(candidatos.map(a => ({ ...a, peso: 1 })), total);\n      } else {\n        const top = (chave) => {\n          const ids = new Set([...candidatos].sort((x, y) => chave(y) - chave(x) || x.id.localeCompare(y.id))\n            .slice(0, total).map(a => a.id));\n          const base = candidatos.map(a => ({ ...a, slots: ids.has(a.id) ? 1 : 0 }));\n          // Se total > numero de assuntos, o que sobra vai por peso.\n          const sobra = total - base.reduce((s, a) => s + a.slots, 0);\n          if (sobra > 0) ratear(base.map(a => ({ ...a, peso: chave(a) })), sobra)\n            .forEach((r, i) => { base[i].slots += r.slots; });\n          return base;\n        };\n        a1 = top(a => a.peso_area);\n        a2 = top(a => a.peso_area * a.fator);\n      }\n    } else {\n      a1 = ratearArea(total, discs, porDisc, oficial, false);\n      a2 = ratearArea(total, discs, porDisc, oficial, true);\n      if (!oficial && total >= PISO_N_MINIMO) {\n        for (const a of a2) {\n          if (a.slots === 0 && a.peso_area >= PISO_PESO && a.fator > 0.2) {\n            const maior = a2.reduce((x, y) => (y.slots > x.slots ? y : x));\n            maior.slots -= 1; a.slots = 1;\n          }\n        }\n      }\n    }\n    if (oficial) a1 = candidatos.map(a => ({ ...a, slots: Number(a.slots_em_45) }));\n    alvo.push(...a1); entregue.push(...a2);\n  }\n\n  // Blueprint: um slot por questao. Area na ordem oficial, assunto por peso na area.\n  const rnd = prng(spec.semente ?? spec.job_id ?? JSON.stringify(spec));\n  const blueprint = [];\n  let seq = 0;\n  for (const area of areas) {\n    const doArea = entregue.filter(a => a.area === area && a.slots > 0)\n      .sort((x, y) => y.peso_area - x.peso_area || x.id.localeCompare(y.id));\n    let k = 0;\n    for (const a of doArea) {\n      for (const rotulo of niveis(a.slots, spec, rnd)) {\n        k += 1; seq += 1;\n        blueprint.push({\n          slot_id: `${area}-${String(k).padStart(2, '0')}`,\n          numero: oficial ? INICIO_OFICIAL[area] + k - 1 : seq,\n          area, disciplina: a.disciplina, assunto_id: a.id, assunto: a.assunto,\n          recorte: null, contexto: null, genero_suporte: null, contexto_proibido: [],\n          habilidade: null, // Matriz do INEP quando mapear limpo. Nao inventar codigo.\n          nivel: rotulo, nivel_alvo: NIVEL_ALVO[rotulo],\n          suporte_permitido: area === 'LC' && a.disciplina !== 'Interdisciplinar'\n            ? ['texto'] : ['texto', 'tabela'],\n          fator_texto: a.fator,\n          peso_origem: { fonte: a.confianca, percentual: Number(a.peso) },\n        });\n      }\n    }\n  }\n\n  // Fidelidade: onde o entregue (so texto) difere do alvo (prova real). Declarado, nao escondido.\n  const desvios = [];\n  const soma = (lista, chave) => lista.reduce((m, a) => ({ ...m, [chave(a)]: (m[chave(a)] ?? 0) + a.slots }), {});\n  const dA = soma(alvo, a => `${a.area}|${a.disciplina}`), dE = soma(entregue, a => `${a.area}|${a.disciplina}`);\n  for (const k of Object.keys(dA)) if (dA[k] !== (dE[k] ?? 0)) {\n    const [area, disciplina] = k.split('|');\n    desvios.push({ nivel: 'disciplina', area, disciplina, alvo: dA[k], entregue: dE[k] ?? 0, motivo: 'restricao_texto' });\n  }\n  const eMap = Object.fromEntries(entregue.map(a => [a.id, a.slots]));\n  for (const a of alvo) if (a.slots !== (eMap[a.id] ?? 0))\n    desvios.push({ nivel: 'assunto', area: a.area, disciplina: a.disciplina, assunto: a.assunto,\n                   alvo: a.slots, entregue: eMap[a.id] ?? 0, motivo: 'restricao_texto' });\n  const movidos = alvo.reduce((s, a) => s + Math.max(0, a.slots - (eMap[a.id] ?? 0)), 0);\n\n  // Invariantes: se quebrar, falha alto (vai para o 99-erro), nunca segue com conta errada.\n  if (blueprint.length !== n) throw new Error(`rateio fechou ${blueprint.length} slots, esperado ${n}`);\n  for (const area of areas) {\n    const got = blueprint.filter(s => s.area === area).length;\n    if (got !== totaisArea[area]) throw new Error(`area ${area}: ${got} slots, esperado ${totaisArea[area]}`);\n  }\n  if (entregue.some(a => a.slots < 0) || alvo.reduce((s, a) => s + a.slots, 0) !== n)\n    throw new Error('rateio inconsistente entre alvo e entregue');\n\n  return {\n    blueprint,\n    fidelidade: { score: Math.round((1 - movidos / n) * 1000) / 1000, desvios },\n    totais_area: totaisArea,\n  };\n}\n\n// Monta um simulado com questoes reais do banco (questoes_enem). Zero LLM.\n// Usa ratear() e prng() de distribuidor.lib.js (o montador concatena os dois arquivos).\n// Ver PLANO.md §0.\n//\n//   1. normalizarPedido: valida o pedido e preenche defaults;\n//   2. planejar: quantas questoes por area, disciplina e (em MT) assunto, na proporcao\n//      oficial (pesos_disciplina / pesos_incidencia, lidos do banco);\n//   3. sortear: para cada linha do plano escolhe questoes reais, espalhando os anos,\n//      evitando as que o aluno ja viu e nunca usando anulada;\n//   4. ordenar: area na ordem da prova, lingua estrangeira primeiro, o resto embaralhado.\n\nconst ORDEM_AREAS = ['LC', 'CH', 'CN', 'MT'];\nconst AREAS_DO_DIA = { 1: ['LC', 'CH'], 2: ['CN', 'MT'] };\n\nfunction normalizarPedido(e) {\n  const p = e ?? {};\n  const tipo = String(p.tipo ?? '').toLowerCase();\n  if (!['oficial', 'personalizado'].includes(tipo)) throw new Error('tipo invalido: use \"oficial\" ou \"personalizado\"');\n  const lingua = String(p.lingua ?? 'ingles').toLowerCase();\n  if (!['ingles', 'espanhol'].includes(lingua)) throw new Error('lingua invalida: use \"ingles\" ou \"espanhol\"');\n  const pedido = { tipo, lingua, semente: String(p.semente ?? '') || null };\n  if (tipo === 'oficial') {\n    const dia = p.dia == null || p.dia === '' || p.dia === 'completo' ? null : Number(p.dia);\n    if (dia !== null && ![1, 2].includes(dia)) throw new Error('dia invalido: 1, 2 ou vazio (prova completa)');\n    pedido.dia = dia;\n    pedido.areas = dia ? AREAS_DO_DIA[dia] : ORDEM_AREAS;\n    pedido.n_questoes = pedido.areas.length * 45;\n  } else {\n    const areas = [...new Set((Array.isArray(p.areas) ? p.areas : String(p.areas ?? '').split(','))\n      .map(a => String(a).trim().toUpperCase()).filter(Boolean))];\n    if (!areas.length || areas.some(a => !ORDEM_AREAS.includes(a))) throw new Error('areas invalidas: use LC, CH, CN, MT');\n    const n = Number(p.n_questoes);\n    if (!Number.isInteger(n) || n < 1 || n > 180) throw new Error('n_questoes invalido (1 a 180)');\n    pedido.areas = ORDEM_AREAS.filter(a => areas.includes(a));\n    pedido.n_questoes = n;\n    pedido.disciplinas = (p.disciplinas ?? []).map(String);\n    pedido.assuntos = (p.assuntos ?? []).map(String);\n  }\n  return pedido;\n}\n\n// Plano: [{area, disciplina, assunto_id|null, n}]. Soma = n_questoes, sempre.\nfunction planejar(pedido, pesosDisciplina, pesosIncidencia) {\n  const oficial = pedido.tipo === 'oficial';\n  const totais = oficial\n    ? Object.fromEntries(pedido.areas.map(a => [a, 45]))\n    : Object.fromEntries(ratear(pedido.areas.map(a => ({ id: a, peso: 1 })), pedido.n_questoes).map(a => [a.id, a.slots]));\n  const filtroDisc = new Set((pedido.disciplinas ?? []).map(s => s.toLowerCase()));\n  const filtroAss = new Set(pedido.assuntos ?? []);\n  const plano = [];\n  for (const area of pedido.areas) {\n    let discs = pesosDisciplina.filter(d => d.area === area)\n      .filter(d => oficial || !filtroDisc.size || filtroDisc.has(String(d.disciplina).toLowerCase()));\n    if (!discs.length) throw new Error(`nenhuma disciplina valida na area ${area}`);\n    const porDisc = oficial\n      ? discs.map(d => ({ ...d, slots: Number(d.slots_em_45) }))\n      : ratear(discs.map(d => ({ ...d, id: d.disciplina, peso: Number(d.slots_em_45) })), totais[area]);\n    for (const d of porDisc) {\n      if (!d.slots) continue;\n      if (area !== 'MT') { plano.push({ area, disciplina: d.disciplina, assunto_id: null, n: d.slots }); continue; }\n      // Matematica: dividida por assunto, que e o que o estudo mediu questao a questao.\n      let ass = pesosIncidencia.filter(a => a.area === 'MT' && (!filtroAss.size || filtroAss.has(a.id)));\n      if (!ass.length) throw new Error('nenhum assunto de MT valido no pedido');\n      const r = oficial && !filtroAss.size\n        ? ass.map(a => ({ ...a, slots: Number(a.slots_em_45) }))\n        : ratear(ass.map(a => ({ ...a, peso: Number(a.peso) })), d.slots);\n      for (const a of r) if (a.slots) plano.push({ area, disciplina: d.disciplina, assunto_id: a.id, n: a.slots });\n    }\n  }\n  const soma = plano.reduce((s, l) => s + l.n, 0);\n  if (soma !== pedido.n_questoes) throw new Error(`plano fechou ${soma}, esperado ${pedido.n_questoes}`);\n  return plano;\n}\n\nfunction sortear(pedido, plano, banco, vistos, semente) {\n  const rnd = prng(semente);\n  const jaVisto = new Set(vistos ?? []);\n  const usadas = new Set();\n  const avisos = [];\n  const anosPorArea = {};\n  const escolhidas = [];\n  const sorteio = new Map(banco.map(q => [q.id, rnd()]));   // ordem aleatoria, fixa pela semente\n\n  // Pool menor primeiro: o slot Interdisciplinar escolhe antes que Portugues e Literatura\n  // gastem as questoes de duas disciplinas.\n  const ordemSorteio = [...plano].sort((a, b) => (b.disciplina === 'Interdisciplinar') - (a.disciplina === 'Interdisciplinar'));\n  for (const linha of ordemSorteio) {\n    const anos = (anosPorArea[linha.area] = anosPorArea[linha.area] ?? {});\n    // \"Interdisciplinar\" (1 de 45 em LC) nao e rotulo de questao: na leitura manual essas\n    // questoes vem com duas disciplinas. O slot sai das questoes de LC com disciplina secundaria.\n    const daDisciplina = linha.disciplina === 'Interdisciplinar'\n      ? q => q.disciplina_secundaria != null && q.disciplina !== 'Lingua estrangeira'\n      : q => q.disciplina === linha.disciplina;\n    const casa = q => !q.anulada && q.area === linha.area && daDisciplina(q)\n      && (linha.assunto_id == null || q.assunto_id === linha.assunto_id)\n      && (q.lingua == null || q.lingua === pedido.lingua) && !usadas.has(q.id);\n    let pool = banco.filter(q => casa(q) && !jaVisto.has(q.id));\n    if (pool.length < linha.n) {\n      const extra = banco.filter(q => casa(q) && jaVisto.has(q.id));\n      if (extra.length) avisos.push(`${linha.disciplina}${linha.assunto_id ? ' / ' + linha.assunto_id : ''}: repetiu questao ja vista (banco pequeno para este aluno)`);\n      pool = pool.concat(extra);\n    }\n    if (pool.length < linha.n)\n      throw new Error(`banco sem questoes suficientes: ${linha.area}/${linha.disciplina}${linha.assunto_id ? '/' + linha.assunto_id : ''} pede ${linha.n}, tem ${pool.length}`);\n    for (let k = 0; k < linha.n; k++) {\n      // O ano menos usado nesta area ganha; empate, a ordem sorteada decide. Nao-vista antes de vista.\n      pool.sort((a, b) => (jaVisto.has(a.id) - jaVisto.has(b.id)) || ((anos[a.ano] ?? 0) - (anos[b.ano] ?? 0))\n        || (sorteio.get(a.id) - sorteio.get(b.id)));\n      const q = pool.shift();\n      usadas.add(q.id);\n      anos[q.ano] = (anos[q.ano] ?? 0) + 1;\n      escolhidas.push({ ...q, _linha: linha });\n    }\n  }\n  return { escolhidas, avisos, anosPorArea };\n}\n\nfunction ordenar(pedido, escolhidas, semente) {\n  const rnd = prng(semente + ':ordem');\n  const peso = new Map(escolhidas.map(q => [q.id, rnd()]));\n  const ordem = [...escolhidas].sort((a, b) =>\n    ORDEM_AREAS.indexOf(a.area) - ORDEM_AREAS.indexOf(b.area)\n    || ((b.disciplina === 'Lingua estrangeira') - (a.disciplina === 'Lingua estrangeira'))\n    || (peso.get(a.id) - peso.get(b.id)));\n  return ordem.map((q, i) => ({ numero: i + 1, questao_id: q.id, area: q.area, disciplina: q.disciplina, ano: q.ano }));\n}\n\nfunction montarSimulado(entrada, pesosDisciplina, pesosIncidencia, banco, vistos) {\n  const pedido = normalizarPedido(entrada);\n  const semente = pedido.semente ?? String(Date.now());\n  const plano = planejar(pedido, pesosDisciplina, pesosIncidencia);\n  const { escolhidas, avisos, anosPorArea } = sortear(pedido, plano, banco, vistos, semente);\n  const itens = ordenar(pedido, escolhidas, semente);\n  if (itens.length !== pedido.n_questoes || new Set(itens.map(i => i.questao_id)).size !== itens.length)\n    throw new Error('simulado montado com contagem errada ou questao repetida');\n  return { pedido, semente, plano, itens, avisos, anos_por_area: anosPorArea };\n}\n\n// ---------------------------------------------- n8n\nconst corpo = $('Ler pedido').first().json.pedido;\nconst d = $input.first().json;\nconst r = montarSimulado(corpo, d.disciplinas, d.assuntos, d.banco, []);\nreturn [{ json: {\n  aluno_id: null, tipo: r.pedido.tipo, spec: r.pedido, semente: r.semente,\n  n_questoes: r.itens.length, distribuicao: r.plano, avisos: r.avisos,\n  itens: r.itens.map(i => ({ numero: i.numero, questao_id: i.questao_id })),\n} }];"
+      }
+    },
+    {
+      "id": "bbaa84b4-17b2-51e5-9954-4edf3097ac13",
+      "name": "Gravar simulado",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        900,
+        0
+      ],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "-- Guarda o simulado (para o gabarito e para corrigir depois). Devolve so o que a prova mostra.\nwith e as (select $1::jsonb as j),\ns as (\n  insert into public.simulados_enem (aluno_id, tipo, spec, semente, n_questoes, distribuicao)\n  select null, j->>'tipo', j->'spec', j->>'semente', (j->>'n_questoes')::smallint, j->'distribuicao' from e\n  returning id\n),\ni as (\n  insert into public.simulado_enem_itens (simulado_id, numero, questao_id)\n  select s.id, x.numero, x.questao_id\n  from s, e, jsonb_to_recordset(e.j->'itens') as x(numero smallint, questao_id text)\n  returning numero, questao_id\n)\nselect (select id from s) as simulado_id,\n       (select j->'spec' from e) as pedido,\n       (select json_agg(json_build_object('numero', i.numero, 'area', q.area, 'disciplina', q.disciplina,\n               'imagem_url', q.imagem_url, 'largura', q.imagem_largura, 'altura', q.imagem_altura)\n               order by i.numero)\n          from i join public.questoes_enem q on q.id = i.questao_id) as questoes;",
+        "options": {
+          "queryReplacement": "={{ JSON.stringify($json) }}"
+        }
+      },
+      "credentials": {
+        "postgres": {
+          "id": "",
+          "name": "Supabase Postgres"
+        }
+      }
+    },
+    {
+      "id": "b3e870b6-bc67-5559-a5ac-f8e8a4470e33",
+      "name": "Montar pagina",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1120,
+        0
+      ],
+      "parameters": {
+        "jsCode": "// Gera as paginas HTML do MVP: a prova (layout B: caderno corrido + cartao-resposta) e o\n// gabarito (pagina separada: regra 4 do CLAUDE.md). O n8n devolve o HTML direto ao navegador;\n// o botao \"Salvar PDF\" usa a impressao do navegador.\n\nconst NOME_AREA = { LC: 'Linguagens, Códigos e suas Tecnologias', CH: 'Ciências Humanas e suas Tecnologias',\n                    CN: 'Ciências da Natureza e suas Tecnologias', MT: 'Matemática e suas Tecnologias' };\n\nconst esc = s => String(s ?? '').replace(/[&<>\"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '\"': '&quot;', \"'\": '&#39;' }[c]));\n\nfunction tituloDoPedido(p) {\n  if (p.tipo === 'oficial') return p.dia ? `Simulado oficial · ${p.dia}º dia` : 'Simulado oficial completo';\n  return 'Simulado personalizado';\n}\n\nconst ESTILO = `\n:root{--tinta:#15191F;--suave:#59616E;--linha:#DDE2EA;--fundo:#FFFFFF;--destaque:#1D4ED8}\n*{box-sizing:border-box}\nbody{margin:0;background:var(--fundo);color:var(--tinta);font:16px/1.5 \"IBM Plex Sans\",system-ui,sans-serif}\na{color:var(--destaque)}\n.topo{border-bottom:1px solid var(--linha);padding:16px 24px;display:flex;flex-wrap:wrap;align-items:center;gap:8px 24px}\n.topo h1{margin:0;font-size:22px}\n.topo .info{color:var(--suave);font-size:14px;flex:1 1 280px}\n.botao{min-height:44px;padding:0 18px;border-radius:8px;border:0;background:var(--tinta);color:#fff;font:600 15px inherit;font-family:inherit;cursor:pointer}\n.grade{max-width:1240px;margin:0 auto;padding:24px;display:flex;flex-wrap:wrap;gap:32px;align-items:flex-start}\nmain{flex:999 1 560px;min-width:0}\n.instrucoes{background:#F3F5F8;border-radius:10px;padding:14px 18px;font-size:14px;color:#3A414C;margin-bottom:28px}\nh2.area{font-size:15px;letter-spacing:.04em;text-transform:uppercase;color:var(--suave);border-bottom:2px solid var(--tinta);padding-bottom:6px;margin:36px 0 20px}\n.questao{border-bottom:1px solid #E3E7EE;padding-bottom:28px;margin-bottom:28px;break-inside:avoid}\n.questao h3{margin:0 0 10px;font-size:16px}\n.questao img{display:block;max-width:100%;height:auto}\n.bolhas{display:flex;gap:10px;margin-top:14px;align-items:center}\n.bolhas span{width:34px;height:34px;border:1.5px solid #6B7380;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:14px}\naside{flex:1 1 280px;position:sticky;top:16px;border:1px solid var(--linha);border-radius:12px;padding:18px}\naside h2{margin:0 0 4px;font-size:16px}\naside p{margin:0 0 12px;color:var(--suave);font-size:13px}\n.mapa{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px}\n.mapa a{display:flex;align-items:center;justify-content:center;min-height:34px;border:1px solid #C4CBD6;border-radius:6px;text-decoration:none;color:#3A414C;font:500 13px \"IBM Plex Mono\",monospace}\n.cartao{display:none}\n.rodape{max-width:1240px;margin:0 auto;padding:8px 24px 40px;color:var(--suave);font-size:13px}\n@media (max-width:860px){aside{position:static}}\n@media print{\n  @page{margin:12mm}\n  .topo .botao,aside,.instrucoes .tela{display:none}\n  .grade{display:block;padding:0}\n  /* Duas colunas, como o caderno do ENEM: o recorte ja tem a largura da coluna original.\n     Questao de pagina inteira ocupa as duas. */\n  main{columns:2;column-gap:22px}\n  .instrucoes,h2.area,.questao.larga,.cartao{column-span:all}\n  .questao img{width:100%!important}\n  .bolhas span{width:26px;height:26px;font-size:12px}\n  .topo{padding:0 0 10px}\n  .questao{padding-bottom:16px;margin-bottom:16px}\n  .cartao{display:block;break-before:page}\n  .cartao h2{font-size:18px;margin:0 0 4px}\n  .cartao .linhas{columns:3;column-gap:24px;margin-top:14px}\n  .cartao .linha{display:flex;align-items:center;gap:6px;break-inside:avoid;margin-bottom:7px;font:500 12px \"IBM Plex Mono\",monospace}\n  .cartao .linha b{width:26px;text-align:right}\n  .cartao .linha i{width:18px;height:18px;border:1px solid #444;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-style:normal;font-size:9px}\n  a{color:inherit;text-decoration:none}\n}`;\n\nfunction paginaProva(simulado, urlGabarito) {\n  const p = simulado.pedido;\n  const qs = simulado.questoes;\n  const areas = [...new Set(qs.map(q => q.area))];\n  const corpo = areas.map(area => {\n    const daArea = qs.filter(q => q.area === area);\n    return `<h2 class=\"area\">${esc(NOME_AREA[area] ?? area)} · questões ${daArea[0].numero} a ${daArea[daArea.length - 1].numero}</h2>\n${daArea.map(q => `<article class=\"questao${q.largura > 800 ? ' larga' : ''}\" id=\"q${q.numero}\">\n  <h3>Questão ${q.numero}</h3>\n  <img src=\"${esc(q.imagem_url)}\" alt=\"Questão ${q.numero}\" width=\"${Math.round(q.largura * 0.75)}\" loading=\"eager\">\n  <div class=\"bolhas\" aria-hidden=\"true\"><span>A</span><span>B</span><span>C</span><span>D</span><span>E</span></div>\n</article>`).join('\\n')}`;\n  }).join('\\n');\n  const mapa = qs.map(q => `<a href=\"#q${q.numero}\">${q.numero}</a>`).join('');\n  const cartao = qs.map(q => `<div class=\"linha\"><b>${q.numero}</b>${'ABCDE'.split('').map(l => `<i>${l}</i>`).join('')}</div>`).join('');\n  const lingua = qs.some(q => q.disciplina === 'Lingua estrangeira') ? ` · língua estrangeira: ${p.lingua === 'espanhol' ? 'espanhol' : 'inglês'}` : '';\n  return `<!doctype html>\n<html lang=\"pt-BR\">\n<head>\n<meta charset=\"utf-8\">\n<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n<title>${esc(tituloDoPedido(p))}</title>\n<link rel=\"preconnect\" href=\"https://fonts.googleapis.com\">\n<link href=\"https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500&display=swap\" rel=\"stylesheet\">\n<style>${ESTILO}</style>\n</head>\n<body>\n<header class=\"topo\">\n  <h1>${esc(tituloDoPedido(p))}</h1>\n  <span class=\"info\">${qs.length} questões reais do ENEM (2019 a 2025)${lingua} · código ${esc(String(simulado.simulado_id).slice(0, 8))}</span>\n  <button class=\"botao\" type=\"button\" onclick=\"window.print()\">Salvar PDF / Imprimir</button>\n</header>\n<div class=\"grade\">\n<main>\n  <div class=\"instrucoes\">Marque suas respostas no cartão-resposta${'<span class=\"tela\"> (ao imprimir, ele vai na última página)</span>'}. O gabarito fica em um link separado, no fim da prova: confira só depois de terminar.</div>\n${corpo}\n  <section class=\"cartao\">\n    <h2>Cartão-resposta</h2>\n    <span>Nome: ______________________________________ · código ${esc(String(simulado.simulado_id).slice(0, 8))}</span>\n    <div class=\"linhas\">${cartao}</div>\n  </section>\n</main>\n<aside aria-label=\"Ir para a questão\">\n  <h2>Questões</h2>\n  <p>Toque no número para ir até a questão.</p>\n  <nav class=\"mapa\">${mapa}</nav>\n</aside>\n</div>\n<footer class=\"rodape\">Gabarito deste simulado: <a href=\"${esc(urlGabarito)}\">${esc(urlGabarito)}</a></footer>\n</body>\n</html>`;\n}\n\nfunction paginaGabarito(g) {\n  const linhas = g.itens.map(i => `<tr><td>${i.numero}</td><td><b>${esc(i.gabarito)}</b></td><td>${esc(i.area)}</td><td>${esc(i.disciplina)}</td><td>ENEM ${esc(i.ano)} · Q${esc(i.numero_original)}</td></tr>`).join('\\n');\n  return `<!doctype html>\n<html lang=\"pt-BR\">\n<head>\n<meta charset=\"utf-8\">\n<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n<title>Gabarito · ${esc(tituloDoPedido(g.pedido))}</title>\n<link href=\"https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;600&display=swap\" rel=\"stylesheet\">\n<style>\nbody{margin:0;font:15px/1.5 \"IBM Plex Sans\",system-ui,sans-serif;color:#15191F;background:#fff}\n.caixa{max-width:860px;margin:0 auto;padding:24px}\nh1{font-size:22px;margin:0 0 4px}\np{color:#59616E;margin:0 0 18px;font-size:14px}\n.tabela{overflow-x:auto}\ntable{border-collapse:collapse;width:100%;font-size:14px}\nth,td{border-bottom:1px solid #DDE2EA;padding:7px 10px;text-align:left}\nth{font-size:12px;text-transform:uppercase;letter-spacing:.04em;color:#59616E}\nbutton{min-height:44px;padding:0 18px;border-radius:8px;border:0;background:#15191F;color:#fff;font:600 15px inherit;cursor:pointer;margin-bottom:16px}\n@media print{button{display:none}}\n</style>\n</head>\n<body>\n<div class=\"caixa\">\n  <h1>Gabarito oficial · ${esc(tituloDoPedido(g.pedido))}</h1>\n  <p>Código ${esc(String(g.simulado_id).slice(0, 8))} · ${g.itens.length} questões · respostas oficiais do INEP.</p>\n  <button type=\"button\" onclick=\"window.print()\">Salvar PDF / Imprimir</button>\n  <div class=\"tabela\"><table>\n    <thead><tr><th>Nº</th><th>Resposta</th><th>Área</th><th>Disciplina</th><th>Origem</th></tr></thead>\n    <tbody>${linhas}</tbody>\n  </table></div>\n</div>\n</body>\n</html>`;\n}\n\n// ---------------------------------------------- n8n\nconst BASE = \"https://n8n.data.descomplica.io/webhook\";\nconst s = $input.first().json;\nconst html = paginaProva(s, `${BASE}/simulado-enem/gabarito?id=${s.simulado_id}`);\nreturn [{ json: { html } }];"
+      }
+    },
+    {
+      "id": "a3a98728-2962-5a7b-bf5e-be0af62b6570",
+      "name": "Mostrar prova",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        1340,
+        0
+      ],
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": "={{ $json.html }}",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Content-Type",
+                "value": "text/html; charset=utf-8"
+              }
+            ]
+          }
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Formulario": {
+      "main": [
+        [
+          {
+            "node": "Ler pedido",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Link direto": {
+      "main": [
+        [
+          {
+            "node": "Ler pedido",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ler pedido": {
+      "main": [
+        [
+          {
+            "node": "Ler banco e pesos",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ler banco e pesos": {
+      "main": [
+        [
+          {
+            "node": "Montar simulado",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Montar simulado": {
+      "main": [
+        [
+          {
+            "node": "Gravar simulado",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gravar simulado": {
+      "main": [
+        [
+          {
+            "node": "Montar pagina",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Montar pagina": {
+      "main": [
+        [
+          {
+            "node": "Mostrar prova",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "pinData": {}
+}

@@ -1,0 +1,122 @@
+{
+  "name": "45-simulado-gabarito",
+  "nodes": [
+    {
+      "id": "7fcfe0f2-d4b0-52e7-8d90-44d289982b17",
+      "name": "Link do gabarito",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {
+        "httpMethod": "GET",
+        "path": "simulado-enem/gabarito",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "webhookId": "55ab18aa-8348-5c08-98da-e3b58933b567"
+    },
+    {
+      "id": "88fca6bb-401c-5d10-a1cf-5adb59c9dd76",
+      "name": "Ler gabarito",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        220,
+        0
+      ],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "-- Gabarito oficial do INEP, com a origem de cada questao (ano e numero no caderno).\nwith e as (select $1::text as id)\nselect s.id as simulado_id, s.spec as pedido,\n       (select json_agg(json_build_object('numero', it.numero, 'gabarito', q.gabarito, 'area', q.area,\n               'disciplina', q.disciplina, 'ano', q.ano, 'numero_original', q.numero) order by it.numero)\n          from public.simulado_enem_itens it join public.questoes_enem q on q.id = it.questao_id\n          where it.simulado_id = s.id) as itens\nfrom public.simulados_enem s\nwhere s.id::text = (select id from e);",
+        "options": {
+          "queryReplacement": "={{ $json.query.id ?? '' }}"
+        }
+      },
+      "credentials": {
+        "postgres": {
+          "id": "",
+          "name": "Supabase Postgres"
+        }
+      },
+      "executeOnce": true
+    },
+    {
+      "id": "eae7af42-641e-5ac9-8aa4-d2d24651c283",
+      "name": "Montar pagina",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        440,
+        0
+      ],
+      "parameters": {
+        "jsCode": "// Gera as paginas HTML do MVP: a prova (layout B: caderno corrido + cartao-resposta) e o\n// gabarito (pagina separada: regra 4 do CLAUDE.md). O n8n devolve o HTML direto ao navegador;\n// o botao \"Salvar PDF\" usa a impressao do navegador.\n\nconst NOME_AREA = { LC: 'Linguagens, Códigos e suas Tecnologias', CH: 'Ciências Humanas e suas Tecnologias',\n                    CN: 'Ciências da Natureza e suas Tecnologias', MT: 'Matemática e suas Tecnologias' };\n\nconst esc = s => String(s ?? '').replace(/[&<>\"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '\"': '&quot;', \"'\": '&#39;' }[c]));\n\nfunction tituloDoPedido(p) {\n  if (p.tipo === 'oficial') return p.dia ? `Simulado oficial · ${p.dia}º dia` : 'Simulado oficial completo';\n  return 'Simulado personalizado';\n}\n\nconst ESTILO = `\n:root{--tinta:#15191F;--suave:#59616E;--linha:#DDE2EA;--fundo:#FFFFFF;--destaque:#1D4ED8}\n*{box-sizing:border-box}\nbody{margin:0;background:var(--fundo);color:var(--tinta);font:16px/1.5 \"IBM Plex Sans\",system-ui,sans-serif}\na{color:var(--destaque)}\n.topo{border-bottom:1px solid var(--linha);padding:16px 24px;display:flex;flex-wrap:wrap;align-items:center;gap:8px 24px}\n.topo h1{margin:0;font-size:22px}\n.topo .info{color:var(--suave);font-size:14px;flex:1 1 280px}\n.botao{min-height:44px;padding:0 18px;border-radius:8px;border:0;background:var(--tinta);color:#fff;font:600 15px inherit;font-family:inherit;cursor:pointer}\n.grade{max-width:1240px;margin:0 auto;padding:24px;display:flex;flex-wrap:wrap;gap:32px;align-items:flex-start}\nmain{flex:999 1 560px;min-width:0}\n.instrucoes{background:#F3F5F8;border-radius:10px;padding:14px 18px;font-size:14px;color:#3A414C;margin-bottom:28px}\nh2.area{font-size:15px;letter-spacing:.04em;text-transform:uppercase;color:var(--suave);border-bottom:2px solid var(--tinta);padding-bottom:6px;margin:36px 0 20px}\n.questao{border-bottom:1px solid #E3E7EE;padding-bottom:28px;margin-bottom:28px;break-inside:avoid}\n.questao h3{margin:0 0 10px;font-size:16px}\n.questao img{display:block;max-width:100%;height:auto}\n.bolhas{display:flex;gap:10px;margin-top:14px;align-items:center}\n.bolhas span{width:34px;height:34px;border:1.5px solid #6B7380;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:14px}\naside{flex:1 1 280px;position:sticky;top:16px;border:1px solid var(--linha);border-radius:12px;padding:18px}\naside h2{margin:0 0 4px;font-size:16px}\naside p{margin:0 0 12px;color:var(--suave);font-size:13px}\n.mapa{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px}\n.mapa a{display:flex;align-items:center;justify-content:center;min-height:34px;border:1px solid #C4CBD6;border-radius:6px;text-decoration:none;color:#3A414C;font:500 13px \"IBM Plex Mono\",monospace}\n.cartao{display:none}\n.rodape{max-width:1240px;margin:0 auto;padding:8px 24px 40px;color:var(--suave);font-size:13px}\n@media (max-width:860px){aside{position:static}}\n@media print{\n  @page{margin:12mm}\n  .topo .botao,aside,.instrucoes .tela{display:none}\n  .grade{display:block;padding:0}\n  /* Duas colunas, como o caderno do ENEM: o recorte ja tem a largura da coluna original.\n     Questao de pagina inteira ocupa as duas. */\n  main{columns:2;column-gap:22px}\n  .instrucoes,h2.area,.questao.larga,.cartao{column-span:all}\n  .questao img{width:100%!important}\n  .bolhas span{width:26px;height:26px;font-size:12px}\n  .topo{padding:0 0 10px}\n  .questao{padding-bottom:16px;margin-bottom:16px}\n  .cartao{display:block;break-before:page}\n  .cartao h2{font-size:18px;margin:0 0 4px}\n  .cartao .linhas{columns:3;column-gap:24px;margin-top:14px}\n  .cartao .linha{display:flex;align-items:center;gap:6px;break-inside:avoid;margin-bottom:7px;font:500 12px \"IBM Plex Mono\",monospace}\n  .cartao .linha b{width:26px;text-align:right}\n  .cartao .linha i{width:18px;height:18px;border:1px solid #444;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-style:normal;font-size:9px}\n  a{color:inherit;text-decoration:none}\n}`;\n\nfunction paginaProva(simulado, urlGabarito) {\n  const p = simulado.pedido;\n  const qs = simulado.questoes;\n  const areas = [...new Set(qs.map(q => q.area))];\n  const corpo = areas.map(area => {\n    const daArea = qs.filter(q => q.area === area);\n    return `<h2 class=\"area\">${esc(NOME_AREA[area] ?? area)} · questões ${daArea[0].numero} a ${daArea[daArea.length - 1].numero}</h2>\n${daArea.map(q => `<article class=\"questao${q.largura > 800 ? ' larga' : ''}\" id=\"q${q.numero}\">\n  <h3>Questão ${q.numero}</h3>\n  <img src=\"${esc(q.imagem_url)}\" alt=\"Questão ${q.numero}\" width=\"${Math.round(q.largura * 0.75)}\" loading=\"eager\">\n  <div class=\"bolhas\" aria-hidden=\"true\"><span>A</span><span>B</span><span>C</span><span>D</span><span>E</span></div>\n</article>`).join('\\n')}`;\n  }).join('\\n');\n  const mapa = qs.map(q => `<a href=\"#q${q.numero}\">${q.numero}</a>`).join('');\n  const cartao = qs.map(q => `<div class=\"linha\"><b>${q.numero}</b>${'ABCDE'.split('').map(l => `<i>${l}</i>`).join('')}</div>`).join('');\n  const lingua = qs.some(q => q.disciplina === 'Lingua estrangeira') ? ` · língua estrangeira: ${p.lingua === 'espanhol' ? 'espanhol' : 'inglês'}` : '';\n  return `<!doctype html>\n<html lang=\"pt-BR\">\n<head>\n<meta charset=\"utf-8\">\n<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n<title>${esc(tituloDoPedido(p))}</title>\n<link rel=\"preconnect\" href=\"https://fonts.googleapis.com\">\n<link href=\"https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500&display=swap\" rel=\"stylesheet\">\n<style>${ESTILO}</style>\n</head>\n<body>\n<header class=\"topo\">\n  <h1>${esc(tituloDoPedido(p))}</h1>\n  <span class=\"info\">${qs.length} questões reais do ENEM (2019 a 2025)${lingua} · código ${esc(String(simulado.simulado_id).slice(0, 8))}</span>\n  <button class=\"botao\" type=\"button\" onclick=\"window.print()\">Salvar PDF / Imprimir</button>\n</header>\n<div class=\"grade\">\n<main>\n  <div class=\"instrucoes\">Marque suas respostas no cartão-resposta${'<span class=\"tela\"> (ao imprimir, ele vai na última página)</span>'}. O gabarito fica em um link separado, no fim da prova: confira só depois de terminar.</div>\n${corpo}\n  <section class=\"cartao\">\n    <h2>Cartão-resposta</h2>\n    <span>Nome: ______________________________________ · código ${esc(String(simulado.simulado_id).slice(0, 8))}</span>\n    <div class=\"linhas\">${cartao}</div>\n  </section>\n</main>\n<aside aria-label=\"Ir para a questão\">\n  <h2>Questões</h2>\n  <p>Toque no número para ir até a questão.</p>\n  <nav class=\"mapa\">${mapa}</nav>\n</aside>\n</div>\n<footer class=\"rodape\">Gabarito deste simulado: <a href=\"${esc(urlGabarito)}\">${esc(urlGabarito)}</a></footer>\n</body>\n</html>`;\n}\n\nfunction paginaGabarito(g) {\n  const linhas = g.itens.map(i => `<tr><td>${i.numero}</td><td><b>${esc(i.gabarito)}</b></td><td>${esc(i.area)}</td><td>${esc(i.disciplina)}</td><td>ENEM ${esc(i.ano)} · Q${esc(i.numero_original)}</td></tr>`).join('\\n');\n  return `<!doctype html>\n<html lang=\"pt-BR\">\n<head>\n<meta charset=\"utf-8\">\n<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n<title>Gabarito · ${esc(tituloDoPedido(g.pedido))}</title>\n<link href=\"https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;600&display=swap\" rel=\"stylesheet\">\n<style>\nbody{margin:0;font:15px/1.5 \"IBM Plex Sans\",system-ui,sans-serif;color:#15191F;background:#fff}\n.caixa{max-width:860px;margin:0 auto;padding:24px}\nh1{font-size:22px;margin:0 0 4px}\np{color:#59616E;margin:0 0 18px;font-size:14px}\n.tabela{overflow-x:auto}\ntable{border-collapse:collapse;width:100%;font-size:14px}\nth,td{border-bottom:1px solid #DDE2EA;padding:7px 10px;text-align:left}\nth{font-size:12px;text-transform:uppercase;letter-spacing:.04em;color:#59616E}\nbutton{min-height:44px;padding:0 18px;border-radius:8px;border:0;background:#15191F;color:#fff;font:600 15px inherit;cursor:pointer;margin-bottom:16px}\n@media print{button{display:none}}\n</style>\n</head>\n<body>\n<div class=\"caixa\">\n  <h1>Gabarito oficial · ${esc(tituloDoPedido(g.pedido))}</h1>\n  <p>Código ${esc(String(g.simulado_id).slice(0, 8))} · ${g.itens.length} questões · respostas oficiais do INEP.</p>\n  <button type=\"button\" onclick=\"window.print()\">Salvar PDF / Imprimir</button>\n  <div class=\"tabela\"><table>\n    <thead><tr><th>Nº</th><th>Resposta</th><th>Área</th><th>Disciplina</th><th>Origem</th></tr></thead>\n    <tbody>${linhas}</tbody>\n  </table></div>\n</div>\n</body>\n</html>`;\n}\n\n// ---------------------------------------------- n8n\nconst g = $input.first().json;\nif (!g.simulado_id) throw new Error('Simulado nao encontrado: confira o link do gabarito.');\nreturn [{ json: { html: paginaGabarito(g) } }];"
+      }
+    },
+    {
+      "id": "9bbb2c6e-7bd3-54bc-b378-df20b6d6cf6c",
+      "name": "Mostrar gabarito",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        660,
+        0
+      ],
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": "={{ $json.html }}",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Content-Type",
+                "value": "text/html; charset=utf-8"
+              }
+            ]
+          }
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Link do gabarito": {
+      "main": [
+        [
+          {
+            "node": "Ler gabarito",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ler gabarito": {
+      "main": [
+        [
+          {
+            "node": "Montar pagina",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Montar pagina": {
+      "main": [
+        [
+          {
+            "node": "Mostrar gabarito",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "pinData": {}
+}

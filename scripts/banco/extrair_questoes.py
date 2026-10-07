@@ -267,6 +267,9 @@ def segmentar(pdf, ano, dia):
                             lingua = "ingles" if vistos[n] == 1 else "espanhol"
                         atual = {"ano": ano, "dia": dia, "numero": n, "lingua": lingua, "segmentos": []}
                         questoes.append(atual)
+                        # O recorte comeca ABAIXO do "QUESTAO NN" do caderno: o simulado numera
+                        # do jeito dele, e o numero original entregaria o gabarito oficial.
+                        r = (r[0], max(r[1], mks[k - 1]["y1"] + 2), r[2], r[3])
                         atual["segmentos"].append({"pagina": ip, "rect": r})
                     elif atual is not None and tem_tinta(img, r):
                         atual["segmentos"].append({"pagina": ip, "rect": r})

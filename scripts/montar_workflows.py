@@ -524,6 +524,131 @@ return [{ json: r }];""")
     wf.salvar()
 
 
+# ------------------------------------------------------------------ MVP: prova e gabarito sem front (44-45)
+# O proprio n8n serve as paginas. Formulario do n8n ou link direto -> prova em HTML (layout B,
+# botao "Salvar PDF"). Gabarito em outro link (regra 4). Sem token: e so leitura do banco.
+
+N8N_WEBHOOK = "https://n8n.data.descomplica.io/webhook"   # trocar na instancia de producao
+
+SQL_LER_BANCO = """-- Pesos e banco vivem no Supabase (CLAUDE.md).
+select (select json_agg(d) from public.pesos_disciplina d) as disciplinas,
+       (select json_agg(i) from public.pesos_incidencia i) as assuntos,
+       (select json_agg(json_build_object('id', q.id, 'ano', q.ano, 'area', q.area, 'lingua', q.lingua,
+               'anulada', q.anulada, 'disciplina', q.disciplina,
+               'disciplina_secundaria', q.disciplina_secundaria, 'assunto_id', q.assunto_id))
+          from public.questoes_enem q where not q.anulada) as banco;"""
+
+
+def responder_html(wf, nome, pos):
+    return wf.no(nome, "n8n-nodes-base.respondToWebhook", 1.1, pos, {
+        "respondWith": "text", "responseBody": "={{ $json.html }}",
+        "options": {"responseHeaders": {"entries": [{"name": "Content-Type", "value": "text/html; charset=utf-8"}]}},
+    })
+
+
+def wf_44():
+    wf = Workflow("44-simulado-prova")
+    opcoes = lambda *xs: {"values": [{"option": x} for x in xs]}
+    f = wf.no("Formulario", "n8n-nodes-base.formTrigger", 2.2, [0, -120], {
+        "formTitle": "Simulado ENEM",
+        "formDescription": "Questões reais do ENEM (2019 a 2025), na proporção da prova oficial. "
+                           "O simulado abre pronto para fazer ou salvar em PDF.",
+        "formFields": {"values": [
+            {"fieldLabel": "Tipo de simulado", "fieldType": "dropdown", "requiredField": True,
+             "fieldOptions": opcoes("Oficial completo (180 questões)", "Oficial 1º dia: Linguagens e Humanas (90)",
+                                    "Oficial 2º dia: Natureza e Matemática (90)", "Personalizado")},
+            {"fieldLabel": "Áreas (só no personalizado)", "fieldType": "dropdown", "multiselect": True,
+             "fieldOptions": opcoes("Linguagens", "Ciências Humanas", "Ciências da Natureza", "Matemática")},
+            {"fieldLabel": "Número de questões (só no personalizado)", "fieldType": "number"},
+            {"fieldLabel": "Língua estrangeira", "fieldType": "dropdown", "requiredField": True,
+             "fieldOptions": opcoes("Inglês", "Espanhol")},
+        ]},
+        "responseMode": "responseNode", "options": {},
+    }, webhookId=str(uuid.uuid5(uuid.NAMESPACE_URL, "simulado-enem/44/form")))
+    w = wf.no("Link direto", "n8n-nodes-base.webhook", 2, [0, 120],
+              {"httpMethod": "GET", "path": "simulado-enem/prova", "responseMode": "responseNode", "options": {}},
+              webhookId=str(uuid.uuid5(uuid.NAMESPACE_URL, "simulado-enem/44/webhook")))
+    lp = code(wf, "Ler pedido", [240, 0], None, r"""// Aceita o formulario do n8n ou o link direto (?tipo=oficial&dia=2, ?tipo=personalizado&areas=MT,CH&n=20).
+const j = $input.first().json;
+const AREA = { 'Linguagens': 'LC', 'Ciências Humanas': 'CH', 'Ciências da Natureza': 'CN', 'Matemática': 'MT' };
+let pedido;
+if (j.query) {
+  const q = j.query;
+  pedido = { tipo: q.tipo, dia: q.dia, areas: q.areas, n_questoes: q.n, lingua: q.lingua, semente: q.semente };
+} else {
+  const tipo = String(j['Tipo de simulado'] ?? '');
+  const lingua = String(j['Língua estrangeira'] ?? 'Inglês') === 'Espanhol' ? 'espanhol' : 'ingles';
+  if (tipo.startsWith('Oficial')) {
+    pedido = { tipo: 'oficial', dia: tipo.includes('1º') ? 1 : tipo.includes('2º') ? 2 : null, lingua };
+  } else {
+    const areas = [].concat(j['Áreas (só no personalizado)'] ?? []).map(a => AREA[a]).filter(Boolean);
+    if (!areas.length) throw new Error('No personalizado, escolha pelo menos uma área.');
+    pedido = { tipo: 'personalizado', areas, n_questoes: j['Número de questões (só no personalizado)'], lingua };
+  }
+}
+return [{ json: { pedido } }];""")
+    lb = postgres(wf, "Ler banco e pesos", [460, 0], SQL_LER_BANCO, None, uma_vez=True)
+    m = code(wf, "Montar simulado", [680, 0], ["distribuidor.lib.js", "sorteio.lib.js"], """const corpo = $('Ler pedido').first().json.pedido;
+const d = $input.first().json;
+const r = montarSimulado(corpo, d.disciplinas, d.assuntos, d.banco, []);
+return [{ json: {
+  aluno_id: null, tipo: r.pedido.tipo, spec: r.pedido, semente: r.semente,
+  n_questoes: r.itens.length, distribuicao: r.plano, avisos: r.avisos,
+  itens: r.itens.map(i => ({ numero: i.numero, questao_id: i.questao_id })),
+} }];""")
+    g = postgres(wf, "Gravar simulado", [900, 0], """-- Guarda o simulado (para o gabarito e para corrigir depois). Devolve so o que a prova mostra.
+with e as (select $1::jsonb as j),
+s as (
+  insert into public.simulados_enem (aluno_id, tipo, spec, semente, n_questoes, distribuicao)
+  select null, j->>'tipo', j->'spec', j->>'semente', (j->>'n_questoes')::smallint, j->'distribuicao' from e
+  returning id
+),
+i as (
+  insert into public.simulado_enem_itens (simulado_id, numero, questao_id)
+  select s.id, x.numero, x.questao_id
+  from s, e, jsonb_to_recordset(e.j->'itens') as x(numero smallint, questao_id text)
+  returning numero, questao_id
+)
+select (select id from s) as simulado_id,
+       (select j->'spec' from e) as pedido,
+       (select json_agg(json_build_object('numero', i.numero, 'area', q.area, 'disciplina', q.disciplina,
+               'imagem_url', q.imagem_url, 'largura', q.imagem_largura, 'altura', q.imagem_altura)
+               order by i.numero)
+          from i join public.questoes_enem q on q.id = i.questao_id) as questoes;""",
+                 "={{ JSON.stringify($json) }}")
+    pg = code(wf, "Montar pagina", [1120, 0], "pagina.lib.js", f"""const BASE = {js_str(N8N_WEBHOOK)};
+const s = $input.first().json;
+const html = paginaProva(s, `${{BASE}}/simulado-enem/gabarito?id=${{s.simulado_id}}`);
+return [{{ json: {{ html }} }}];""")
+    rs = responder_html(wf, "Mostrar prova", [1340, 0])
+    wf.liga(f, lp)
+    wf.liga(w, lp)
+    wf.cadeia(lp, lb, m, g, pg, rs)
+    wf.salvar()
+
+
+def wf_45():
+    wf = Workflow("45-simulado-gabarito")
+    w = wf.no("Link do gabarito", "n8n-nodes-base.webhook", 2, [0, 0],
+              {"httpMethod": "GET", "path": "simulado-enem/gabarito", "responseMode": "responseNode", "options": {}},
+              webhookId=str(uuid.uuid5(uuid.NAMESPACE_URL, "simulado-enem/45/webhook")))
+    l = postgres(wf, "Ler gabarito", [220, 0], """-- Gabarito oficial do INEP, com a origem de cada questao (ano e numero no caderno).
+with e as (select $1::text as id)
+select s.id as simulado_id, s.spec as pedido,
+       (select json_agg(json_build_object('numero', it.numero, 'gabarito', q.gabarito, 'area', q.area,
+               'disciplina', q.disciplina, 'ano', q.ano, 'numero_original', q.numero) order by it.numero)
+          from public.simulado_enem_itens it join public.questoes_enem q on q.id = it.questao_id
+          where it.simulado_id = s.id) as itens
+from public.simulados_enem s
+where s.id::text = (select id from e);""", "={{ $json.query.id ?? '' }}", uma_vez=True)
+    c = code(wf, "Montar pagina", [440, 0], "pagina.lib.js", """const g = $input.first().json;
+if (!g.simulado_id) throw new Error('Simulado nao encontrado: confira o link do gabarito.');
+return [{ json: { html: paginaGabarito(g) } }];""")
+    r = responder_html(wf, "Mostrar gabarito", [660, 0])
+    wf.cadeia(w, l, c, r)
+    wf.salvar()
+
+
 if __name__ == "__main__":
-    for f in (wf_99, wf_98, wf_10, wf_02, wf_00, wf_40, wf_41, wf_42, wf_43):
+    for f in (wf_99, wf_98, wf_10, wf_02, wf_00, wf_40, wf_41, wf_42, wf_43, wf_44, wf_45):
         f()
