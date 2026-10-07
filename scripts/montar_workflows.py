@@ -641,20 +641,21 @@ def wf_46():
 const j = $input.first().json;
 const AREA = {{ 'Linguagens': 'LC', 'Ciências Humanas': 'CH', 'Ciências da Natureza': 'CN', 'Matemática': 'MT' }};
 const tipo = String(j['Tipo de simulado'] ?? '');
-const p = new URLSearchParams();
-p.set('lingua', String(j['Língua estrangeira'] ?? 'Inglês') === 'Espanhol' ? 'espanhol' : 'ingles');
+const p = {{}};   // o sandbox do Code do n8n nao tem URLSearchParams
+p.lingua = String(j['Língua estrangeira'] ?? 'Inglês') === 'Espanhol' ? 'espanhol' : 'ingles';
 if (tipo.startsWith('Oficial')) {{
-  p.set('tipo', 'oficial');
-  if (tipo.includes('1º')) p.set('dia', '1');
-  if (tipo.includes('2º')) p.set('dia', '2');
+  p.tipo = 'oficial';
+  if (tipo.includes('1º')) p.dia = '1';
+  if (tipo.includes('2º')) p.dia = '2';
 }} else {{
   const areas = [].concat(j['Áreas (só no personalizado)'] ?? []).map(a => AREA[a]).filter(Boolean);
   if (!areas.length) throw new Error('No personalizado, escolha pelo menos uma área.');
   const n = Number(j['Número de questões (só no personalizado)']);
   if (!Number.isInteger(n) || n < 1 || n > 180) throw new Error('No personalizado, informe de 1 a 180 questões.');
-  p.set('tipo', 'personalizado'); p.set('areas', areas.join(',')); p.set('n', String(n));
+  p.tipo = 'personalizado'; p.areas = areas.join(','); p.n = String(n);
 }}
-return [{{ json: {{ url: `${{BASE}}/simulado-enem/prova?${{p.toString()}}` }} }}];""")
+const qs = Object.keys(p).map(k => `${{k}}=${{encodeURIComponent(p[k])}}`).join('&');
+return [{{ json: {{ url: `${{BASE}}/simulado-enem/prova?${{qs}}` }} }}];""")
     e = wf.no("Abrir prova", "n8n-nodes-base.form", 1, [480, 0], {
         "operation": "completion", "respondWith": "redirect", "redirectUrl": "={{ $json.url }}",
     })
