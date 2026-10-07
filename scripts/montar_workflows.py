@@ -548,44 +548,13 @@ def responder_html(wf, nome, pos):
 
 def wf_44():
     wf = Workflow("44-simulado-prova")
-    opcoes = lambda *xs: {"values": [{"option": x} for x in xs]}
-    f = wf.no("Formulario", "n8n-nodes-base.formTrigger", 2.2, [0, -120], {
-        "formTitle": "Simulado ENEM",
-        "formDescription": "Questões reais do ENEM (2019 a 2025), na proporção da prova oficial. "
-                           "O simulado abre pronto para fazer ou salvar em PDF.",
-        "formFields": {"values": [
-            {"fieldLabel": "Tipo de simulado", "fieldType": "dropdown", "requiredField": True,
-             "fieldOptions": opcoes("Oficial completo (180 questões)", "Oficial 1º dia: Linguagens e Humanas (90)",
-                                    "Oficial 2º dia: Natureza e Matemática (90)", "Personalizado")},
-            {"fieldLabel": "Áreas (só no personalizado)", "fieldType": "dropdown", "multiselect": True,
-             "fieldOptions": opcoes("Linguagens", "Ciências Humanas", "Ciências da Natureza", "Matemática")},
-            {"fieldLabel": "Número de questões (só no personalizado)", "fieldType": "number"},
-            {"fieldLabel": "Língua estrangeira", "fieldType": "dropdown", "requiredField": True,
-             "fieldOptions": opcoes("Inglês", "Espanhol")},
-        ]},
-        "responseMode": "responseNode", "options": {},
-    }, webhookId=str(uuid.uuid5(uuid.NAMESPACE_URL, "simulado-enem/44/form")))
     w = wf.no("Link direto", "n8n-nodes-base.webhook", 2, [0, 120],
               {"httpMethod": "GET", "path": "simulado-enem/prova", "responseMode": "responseNode", "options": {}},
               webhookId=str(uuid.uuid5(uuid.NAMESPACE_URL, "simulado-enem/44/webhook")))
-    lp = code(wf, "Ler pedido", [240, 0], None, r"""// Aceita o formulario do n8n ou o link direto (?tipo=oficial&dia=2, ?tipo=personalizado&areas=MT,CH&n=20).
-const j = $input.first().json;
-const AREA = { 'Linguagens': 'LC', 'Ciências Humanas': 'CH', 'Ciências da Natureza': 'CN', 'Matemática': 'MT' };
-let pedido;
-if (j.query) {
-  const q = j.query;
-  pedido = { tipo: q.tipo, dia: q.dia, areas: q.areas, n_questoes: q.n, lingua: q.lingua, semente: q.semente };
-} else {
-  const tipo = String(j['Tipo de simulado'] ?? '');
-  const lingua = String(j['Língua estrangeira'] ?? 'Inglês') === 'Espanhol' ? 'espanhol' : 'ingles';
-  if (tipo.startsWith('Oficial')) {
-    pedido = { tipo: 'oficial', dia: tipo.includes('1º') ? 1 : tipo.includes('2º') ? 2 : null, lingua };
-  } else {
-    const areas = [].concat(j['Áreas (só no personalizado)'] ?? []).map(a => AREA[a]).filter(Boolean);
-    if (!areas.length) throw new Error('No personalizado, escolha pelo menos uma área.');
-    pedido = { tipo: 'personalizado', areas, n_questoes: j['Número de questões (só no personalizado)'], lingua };
-  }
-}
+    lp = code(wf, "Ler pedido", [240, 0], None, r"""// Link: ?tipo=oficial&dia=2  ou  ?tipo=personalizado&areas=MT,CH&n=20&lingua=espanhol
+// (o formulario 46-simulado-formulario monta este link e redireciona para ca).
+const q = $input.first().json.query ?? {};
+const pedido = { tipo: q.tipo, dia: q.dia, areas: q.areas, n_questoes: q.n, lingua: q.lingua, semente: q.semente };
 return [{ json: { pedido } }];""")
     lb = postgres(wf, "Ler banco e pesos", [460, 0], SQL_LER_BANCO, None, uma_vez=True)
     m = code(wf, "Montar simulado", [680, 0], ["distribuidor.lib.js", "sorteio.lib.js"], """const corpo = $('Ler pedido').first().json.pedido;
@@ -621,9 +590,7 @@ const s = $input.first().json;
 const html = paginaProva(s, `${{BASE}}/simulado-enem/gabarito?id=${{s.simulado_id}}`);
 return [{{ json: {{ html }} }}];""")
     rs = responder_html(wf, "Mostrar prova", [1340, 0])
-    wf.liga(f, lp)
-    wf.liga(w, lp)
-    wf.cadeia(lp, lb, m, g, pg, rs)
+    wf.cadeia(w, lp, lb, m, g, pg, rs)
     wf.salvar()
 
 
@@ -649,6 +616,52 @@ return [{ json: { html: paginaGabarito(g) } }];""")
     wf.salvar()
 
 
+def wf_46():
+    """Formulario do n8n. Form Trigger nao pode usar Respond to Webhook: ele monta o link da
+    prova e o Form Ending redireciona o navegador para o 44."""
+    wf = Workflow("46-simulado-formulario")
+    opcoes = lambda *xs: {"values": [{"option": x} for x in xs]}
+    f = wf.no("Formulario", "n8n-nodes-base.formTrigger", 2.2, [0, 0], {
+        "formTitle": "Simulado ENEM",
+        "formDescription": "Questões reais do ENEM (2019 a 2025), na proporção da prova oficial. "
+                           "O simulado abre pronto para fazer ou salvar em PDF.",
+        "formFields": {"values": [
+            {"fieldLabel": "Tipo de simulado", "fieldType": "dropdown", "requiredField": True,
+             "fieldOptions": opcoes("Oficial completo (180 questões)", "Oficial 1º dia: Linguagens e Humanas (90)",
+                                    "Oficial 2º dia: Natureza e Matemática (90)", "Personalizado")},
+            {"fieldLabel": "Áreas (só no personalizado)", "fieldType": "dropdown", "multiselect": True,
+             "fieldOptions": opcoes("Linguagens", "Ciências Humanas", "Ciências da Natureza", "Matemática")},
+            {"fieldLabel": "Número de questões (só no personalizado)", "fieldType": "number"},
+            {"fieldLabel": "Língua estrangeira", "fieldType": "dropdown", "requiredField": True,
+             "fieldOptions": opcoes("Inglês", "Espanhol")},
+        ]},
+        "options": {},
+    }, webhookId=str(uuid.uuid5(uuid.NAMESPACE_URL, "simulado-enem/44/form")))
+    c = code(wf, "Montar link", [240, 0], None, f"""const BASE = {js_str(N8N_WEBHOOK)};
+const j = $input.first().json;
+const AREA = {{ 'Linguagens': 'LC', 'Ciências Humanas': 'CH', 'Ciências da Natureza': 'CN', 'Matemática': 'MT' }};
+const tipo = String(j['Tipo de simulado'] ?? '');
+const p = new URLSearchParams();
+p.set('lingua', String(j['Língua estrangeira'] ?? 'Inglês') === 'Espanhol' ? 'espanhol' : 'ingles');
+if (tipo.startsWith('Oficial')) {{
+  p.set('tipo', 'oficial');
+  if (tipo.includes('1º')) p.set('dia', '1');
+  if (tipo.includes('2º')) p.set('dia', '2');
+}} else {{
+  const areas = [].concat(j['Áreas (só no personalizado)'] ?? []).map(a => AREA[a]).filter(Boolean);
+  if (!areas.length) throw new Error('No personalizado, escolha pelo menos uma área.');
+  const n = Number(j['Número de questões (só no personalizado)']);
+  if (!Number.isInteger(n) || n < 1 || n > 180) throw new Error('No personalizado, informe de 1 a 180 questões.');
+  p.set('tipo', 'personalizado'); p.set('areas', areas.join(',')); p.set('n', String(n));
+}}
+return [{{ json: {{ url: `${{BASE}}/simulado-enem/prova?${{p.toString()}}` }} }}];""")
+    e = wf.no("Abrir prova", "n8n-nodes-base.form", 1, [480, 0], {
+        "operation": "completion", "respondWith": "redirect", "redirectUrl": "={{ $json.url }}",
+    })
+    wf.cadeia("Formulario", c, e)
+    wf.salvar()
+
+
 if __name__ == "__main__":
-    for f in (wf_99, wf_98, wf_10, wf_02, wf_00, wf_40, wf_41, wf_42, wf_43, wf_44, wf_45):
+    for f in (wf_99, wf_98, wf_10, wf_02, wf_00, wf_40, wf_41, wf_42, wf_43, wf_44, wf_45, wf_46):
         f()

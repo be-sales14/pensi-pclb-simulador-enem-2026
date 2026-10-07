@@ -2,88 +2,6 @@
   "name": "44-simulado-prova",
   "nodes": [
     {
-      "id": "483d1a47-9b62-5fe9-94e4-a3d7d589d000",
-      "name": "Formulario",
-      "type": "n8n-nodes-base.formTrigger",
-      "typeVersion": 2.2,
-      "position": [
-        0,
-        -120
-      ],
-      "parameters": {
-        "formTitle": "Simulado ENEM",
-        "formDescription": "Questões reais do ENEM (2019 a 2025), na proporção da prova oficial. O simulado abre pronto para fazer ou salvar em PDF.",
-        "formFields": {
-          "values": [
-            {
-              "fieldLabel": "Tipo de simulado",
-              "fieldType": "dropdown",
-              "requiredField": true,
-              "fieldOptions": {
-                "values": [
-                  {
-                    "option": "Oficial completo (180 questões)"
-                  },
-                  {
-                    "option": "Oficial 1º dia: Linguagens e Humanas (90)"
-                  },
-                  {
-                    "option": "Oficial 2º dia: Natureza e Matemática (90)"
-                  },
-                  {
-                    "option": "Personalizado"
-                  }
-                ]
-              }
-            },
-            {
-              "fieldLabel": "Áreas (só no personalizado)",
-              "fieldType": "dropdown",
-              "multiselect": true,
-              "fieldOptions": {
-                "values": [
-                  {
-                    "option": "Linguagens"
-                  },
-                  {
-                    "option": "Ciências Humanas"
-                  },
-                  {
-                    "option": "Ciências da Natureza"
-                  },
-                  {
-                    "option": "Matemática"
-                  }
-                ]
-              }
-            },
-            {
-              "fieldLabel": "Número de questões (só no personalizado)",
-              "fieldType": "number"
-            },
-            {
-              "fieldLabel": "Língua estrangeira",
-              "fieldType": "dropdown",
-              "requiredField": true,
-              "fieldOptions": {
-                "values": [
-                  {
-                    "option": "Inglês"
-                  },
-                  {
-                    "option": "Espanhol"
-                  }
-                ]
-              }
-            }
-          ]
-        },
-        "responseMode": "responseNode",
-        "options": {}
-      },
-      "webhookId": "36023c8e-a7ba-5061-a240-b55016570795"
-    },
-    {
       "id": "a63b7772-afb9-5e33-9a74-dc52b519f0ef",
       "name": "Link direto",
       "type": "n8n-nodes-base.webhook",
@@ -110,7 +28,7 @@
         0
       ],
       "parameters": {
-        "jsCode": "// Aceita o formulario do n8n ou o link direto (?tipo=oficial&dia=2, ?tipo=personalizado&areas=MT,CH&n=20).\nconst j = $input.first().json;\nconst AREA = { 'Linguagens': 'LC', 'Ciências Humanas': 'CH', 'Ciências da Natureza': 'CN', 'Matemática': 'MT' };\nlet pedido;\nif (j.query) {\n  const q = j.query;\n  pedido = { tipo: q.tipo, dia: q.dia, areas: q.areas, n_questoes: q.n, lingua: q.lingua, semente: q.semente };\n} else {\n  const tipo = String(j['Tipo de simulado'] ?? '');\n  const lingua = String(j['Língua estrangeira'] ?? 'Inglês') === 'Espanhol' ? 'espanhol' : 'ingles';\n  if (tipo.startsWith('Oficial')) {\n    pedido = { tipo: 'oficial', dia: tipo.includes('1º') ? 1 : tipo.includes('2º') ? 2 : null, lingua };\n  } else {\n    const areas = [].concat(j['Áreas (só no personalizado)'] ?? []).map(a => AREA[a]).filter(Boolean);\n    if (!areas.length) throw new Error('No personalizado, escolha pelo menos uma área.');\n    pedido = { tipo: 'personalizado', areas, n_questoes: j['Número de questões (só no personalizado)'], lingua };\n  }\n}\nreturn [{ json: { pedido } }];"
+        "jsCode": "// Link: ?tipo=oficial&dia=2  ou  ?tipo=personalizado&areas=MT,CH&n=20&lingua=espanhol\n// (o formulario 46-simulado-formulario monta este link e redireciona para ca).\nconst q = $input.first().json.query ?? {};\nconst pedido = { tipo: q.tipo, dia: q.dia, areas: q.areas, n_questoes: q.n, lingua: q.lingua, semente: q.semente };\nreturn [{ json: { pedido } }];"
       }
     },
     {
@@ -210,17 +128,6 @@
     }
   ],
   "connections": {
-    "Formulario": {
-      "main": [
-        [
-          {
-            "node": "Ler pedido",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
     "Link direto": {
       "main": [
         [
