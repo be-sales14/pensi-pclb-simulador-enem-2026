@@ -528,7 +528,7 @@ return [{ json: r }];""")
 # O proprio n8n serve as paginas. Formulario do n8n ou link direto -> prova em HTML (layout B,
 # botao "Salvar PDF"). Gabarito em outro link (regra 4). Sem token: e so leitura do banco.
 
-N8N_WEBHOOK = "https://n8n.data.descomplica.io/webhook"   # trocar na instancia de producao
+N8N_WEBHOOK = "https://api.data.descomplica.io/webhook"   # trocar na instancia de producao
 
 SQL_LER_BANCO = """-- Pesos e banco vivem no Supabase (CLAUDE.md).
 select (select json_agg(d) from public.pesos_disciplina d) as disciplinas,
