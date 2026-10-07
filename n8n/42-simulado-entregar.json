@@ -1,0 +1,152 @@
+{
+  "name": "42-simulado-entregar",
+  "nodes": [
+    {
+      "id": "334b201b-33e8-5a93-91ce-c5b721a6af5f",
+      "name": "Pedido",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "simulado-enem/entregar",
+        "authentication": "headerAuth",
+        "responseMode": "lastNode",
+        "options": {}
+      },
+      "webhookId": "3ef3727d-b515-5c22-a907-45059fd0ce05",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "",
+          "name": "Simulado ENEM · token do front"
+        }
+      }
+    },
+    {
+      "id": "df6777e5-f953-5a30-80eb-5483c989cee1",
+      "name": "Ler gabarito",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        220,
+        0
+      ],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "-- O gabarito so e lido aqui, no back, para corrigir.\nwith e as (select $1::jsonb as j)\nselect (select count(*) from public.alunos a where a.id::text = (select j->>'aluno_id' from e)) as aluno_existe,\n       (select json_agg(json_build_object('numero', it.numero, 'area', q.area, 'disciplina', q.disciplina,\n               'gabarito', q.gabarito) order by it.numero)\n          from public.simulado_enem_itens it join public.questoes_enem q on q.id = it.questao_id\n          where it.simulado_id::text = (select j->>'simulado_id' from e)) as itens;",
+        "options": {
+          "queryReplacement": "={{ JSON.stringify($json.body ?? {}) }}"
+        }
+      },
+      "credentials": {
+        "postgres": {
+          "id": "",
+          "name": "Supabase Postgres"
+        }
+      },
+      "executeOnce": true
+    },
+    {
+      "id": "6d9fdfd2-28f9-53eb-9615-e9dd00160483",
+      "name": "Corrigir",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        440,
+        0
+      ],
+      "parameters": {
+        "jsCode": "// Corrige uma entrega. Roda no n8n (o gabarito nunca vai ao browser antes disto).\n// itens: [{numero, area, disciplina, gabarito}] lidos do banco; respostas: {\"1\":\"C\", ...}.\n\nfunction corrigir(itens, respostasBrutas) {\n  if (!Array.isArray(itens) || !itens.length) throw new Error('simulado sem questoes');\n  const respostas = typeof respostasBrutas === 'string' ? JSON.parse(respostasBrutas) : (respostasBrutas ?? {});\n  const limpas = {};\n  const detalhe = [];\n  const soma = (m, k, certo) => { m[k] = m[k] ?? { acertos: 0, total: 0 }; m[k].total += 1; if (certo) m[k].acertos += 1; };\n  const porArea = {}, porDisciplina = {};\n  let acertos = 0;\n  for (const it of [...itens].sort((a, b) => a.numero - b.numero)) {\n    const bruta = respostas[it.numero] ?? respostas[String(it.numero)] ?? null;\n    const marcada = bruta == null || bruta === '' ? null : String(bruta).trim().toUpperCase();\n    if (marcada !== null && !/^[A-E]$/.test(marcada)) throw new Error(`resposta invalida na questao ${it.numero}: \"${bruta}\"`);\n    const certo = marcada !== null && marcada === it.gabarito;\n    if (certo) acertos += 1;\n    limpas[it.numero] = marcada;\n    soma(porArea, it.area, certo);\n    soma(porDisciplina, `${it.area} · ${it.disciplina}`, certo);\n    detalhe.push({ numero: it.numero, marcada, gabarito: it.gabarito, certo });\n  }\n  const numeros = new Set(itens.map(i => String(i.numero)));\n  const fora = Object.keys(respostas).filter(k => !numeros.has(String(k)));\n  if (fora.length) throw new Error(`respostas para questoes que nao existem neste simulado: ${fora.join(', ')}`);\n  return { respostas: limpas, acertos, total: itens.length, por_area: porArea, por_disciplina: porDisciplina, detalhe };\n}\n\n// ---------------------------------------------- n8n\nconst b = $('Pedido').first().json.body ?? {};\nconst d = $input.first().json;\nif (!Number(d.aluno_existe)) throw new Error('Aluno nao cadastrado: registre email e nome antes de entregar.');\nif (!d.itens) throw new Error('Simulado nao encontrado.');\nconst r = corrigir(d.itens, b.respostas);\nreturn [{ json: { simulado_id: b.simulado_id, aluno_id: b.aluno_id,\n                  origem: b.origem === 'pdf' ? 'pdf' : 'pagina', iniciado_em: b.iniciado_em || null, ...r } }];"
+      }
+    },
+    {
+      "id": "0baf1d58-30ff-58d4-864f-c2c5b951c00f",
+      "name": "Gravar entrega",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        660,
+        0
+      ],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "-- Uma entrega por aluno por simulado: a segunda nao sobrescreve a primeira.\nwith e as (select $1::jsonb as j),\nins as (\n  insert into public.entregas (simulado_id, aluno_id, origem, respostas, acertos, total, por_area,\n                               por_disciplina, iniciado_em)\n  select (j->>'simulado_id')::uuid, (j->>'aluno_id')::uuid, j->>'origem', j->'respostas',\n         (j->>'acertos')::smallint, (j->>'total')::smallint, j->'por_area', j->'por_disciplina',\n         nullif(j->>'iniciado_em', '')::timestamptz\n  from e\n  on conflict (simulado_id, aluno_id) do nothing\n  returning id\n)\nselect (select id from ins) as entrega_id;",
+        "options": {
+          "queryReplacement": "={{ JSON.stringify($json) }}"
+        }
+      },
+      "credentials": {
+        "postgres": {
+          "id": "",
+          "name": "Supabase Postgres"
+        }
+      }
+    },
+    {
+      "id": "1ae2cc9a-8f72-5890-9143-c44b8e1803cc",
+      "name": "Resultado",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        880,
+        0
+      ],
+      "parameters": {
+        "jsCode": "const c = $('Corrigir').first().json;\nif (!$input.first().json.entrega_id) throw new Error('Este simulado ja foi entregue por este aluno.');\n// Agora sim o gabarito pode ir ao browser: a entrega ja esta gravada.\nreturn [{ json: { entrega_id: $input.first().json.entrega_id, acertos: c.acertos, total: c.total,\n                  por_area: c.por_area, por_disciplina: c.por_disciplina, questoes: c.detalhe } }];"
+      }
+    }
+  ],
+  "connections": {
+    "Pedido": {
+      "main": [
+        [
+          {
+            "node": "Ler gabarito",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ler gabarito": {
+      "main": [
+        [
+          {
+            "node": "Corrigir",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Corrigir": {
+      "main": [
+        [
+          {
+            "node": "Gravar entrega",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gravar entrega": {
+      "main": [
+        [
+          {
+            "node": "Resultado",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "pinData": {}
+}

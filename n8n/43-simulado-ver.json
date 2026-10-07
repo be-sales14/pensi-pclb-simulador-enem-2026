@@ -1,0 +1,94 @@
+{
+  "name": "43-simulado-ver",
+  "nodes": [
+    {
+      "id": "7cc31e7e-9dfa-54a9-a69d-58fa79b1ce96",
+      "name": "Pedido",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "simulado-enem/ver",
+        "authentication": "headerAuth",
+        "responseMode": "lastNode",
+        "options": {}
+      },
+      "webhookId": "44993b2f-debd-57e6-8929-d46b775b20b7",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "",
+          "name": "Simulado ENEM · token do front"
+        }
+      }
+    },
+    {
+      "id": "d10c1336-ea99-525e-b84e-d4de4c375c10",
+      "name": "Ler simulado",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        220,
+        0
+      ],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "-- Reabre um simulado pelo codigo (quem fez no PDF digita as respostas depois). Sem gabarito.\nwith e as (select $1::jsonb as j)\nselect s.id as simulado_id, s.spec as pedido,\n       (select json_agg(json_build_object('numero', it.numero, 'area', q.area, 'disciplina', q.disciplina,\n               'imagem_url', q.imagem_url, 'largura', q.imagem_largura, 'altura', q.imagem_altura)\n               order by it.numero)\n          from public.simulado_enem_itens it join public.questoes_enem q on q.id = it.questao_id\n          where it.simulado_id = s.id) as questoes\nfrom public.simulados_enem s\nwhere s.id::text = (select j->>'simulado_id' from e);",
+        "options": {
+          "queryReplacement": "={{ JSON.stringify($json.body ?? {}) }}"
+        }
+      },
+      "credentials": {
+        "postgres": {
+          "id": "",
+          "name": "Supabase Postgres"
+        }
+      },
+      "executeOnce": true
+    },
+    {
+      "id": "f5c9fa7e-a966-5919-87d1-62e2c755f9b2",
+      "name": "Conferir",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        440,
+        0
+      ],
+      "parameters": {
+        "jsCode": "const r = $input.first().json;\nif (!r.simulado_id) throw new Error('Simulado nao encontrado. Confira o codigo impresso no PDF.');\nreturn [{ json: r }];"
+      }
+    }
+  ],
+  "connections": {
+    "Pedido": {
+      "main": [
+        [
+          {
+            "node": "Ler simulado",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ler simulado": {
+      "main": [
+        [
+          {
+            "node": "Conferir",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "pinData": {}
+}

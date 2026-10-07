@@ -72,7 +72,9 @@ class Workflow:
 
 
 def code(wf, nome, pos, lib, corpo, por_item=False):
-    fonte = (ler(f"n8n/src/{lib}") + "\n// ---------------------------------------------- n8n\n" if lib else "") + corpo
+    libs = [lib] if isinstance(lib, str) else (lib or [])
+    fonte = "".join(ler(f"n8n/src/{l}") + "\n" for l in libs)
+    fonte = (fonte + "// ---------------------------------------------- n8n\n" if libs else "") + corpo
     params = {"jsCode": fonte}
     if por_item:
         params["mode"] = "runOnceForEachItem"
@@ -368,6 +370,160 @@ from public.pesos_incidencia where area = 'MT';""", None, uma_vez=True)
     wf.salvar()
 
 
+
+# ------------------------------------------------------------------ simulado com questoes reais (40-43)
+# Webhooks chamados pelo front (Route Handler na Vercel), protegidos por header de token.
+# Zero LLM: Code + Postgres. O gabarito so sai no 42, depois da entrega.
+
+CRED_TOKEN = {"httpHeaderAuth": {"id": "", "name": "Simulado ENEM · token do front"}}
+
+
+def webhook(wf, nome, caminho):
+    return wf.no(nome, "n8n-nodes-base.webhook", 2, [0, 0],
+                 {"httpMethod": "POST", "path": caminho, "authentication": "headerAuth",
+                  "responseMode": "lastNode", "options": {}},
+                 webhookId=str(uuid.uuid5(uuid.NAMESPACE_URL, f"simulado-enem/{wf.nome}/webhook")),
+                 credentials=CRED_TOKEN)
+
+
+def wf_40():
+    wf = Workflow("40-aluno")
+    w = webhook(wf, "Pedido", "simulado-enem/aluno")
+    v = code(wf, "Validar", [220, 0], None, r"""// Cadastro minimo: email (a chave do historico) e nome (so para exibir).
+const b = $input.first().json.body ?? {};
+const email = String(b.email ?? '').trim().toLowerCase();
+const nome = String(b.nome ?? '').trim();
+if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) throw new Error('Email invalido.');
+if (nome.length < 1 || nome.length > 120) throw new Error('Informe seu nome.');
+return [{ json: { email, nome } }];""")
+    s = postgres(wf, "Registrar e ler historico", [440, 0], """-- Mesmo email = mesmo aluno: atualiza o nome e devolve o historico de entregas.
+with e as (select $1::jsonb as j),
+a as (
+  insert into public.alunos (email, nome) select j->>'email', j->>'nome' from e
+  on conflict (email) do update set nome = excluded.nome, ultimo_acesso = now()
+  returning id, email::text as email, nome
+)
+select a.id as aluno_id, a.email, a.nome,
+  coalesce((select json_agg(json_build_object(
+      'entrega_id', en.id, 'simulado_id', en.simulado_id, 'tipo', s.tipo, 'origem', en.origem,
+      'acertos', en.acertos, 'total', en.total, 'por_area', en.por_area, 'entregue_em', en.entregue_em)
+      order by en.entregue_em desc)
+    from public.entregas en join public.simulados_enem s on s.id = en.simulado_id
+    where en.aluno_id = a.id), '[]'::json) as historico
+from a;""", "={{ JSON.stringify($json) }}")
+    wf.cadeia(w, v, s)
+    wf.salvar()
+
+
+def wf_41():
+    wf = Workflow("41-simulado-montar")
+    w = webhook(wf, "Pedido", "simulado-enem/montar")
+    l = postgres(wf, "Ler banco, pesos e historico", [220, 0], """-- Pesos e banco vivem no Supabase (CLAUDE.md). "vistos": o que este aluno ja recebeu.
+with e as (select $1::jsonb as j)
+select (select json_agg(d) from public.pesos_disciplina d) as disciplinas,
+       (select json_agg(i) from public.pesos_incidencia i) as assuntos,
+       (select json_agg(json_build_object('id', q.id, 'ano', q.ano, 'area', q.area, 'lingua', q.lingua,
+               'anulada', q.anulada, 'disciplina', q.disciplina,
+               'disciplina_secundaria', q.disciplina_secundaria, 'assunto_id', q.assunto_id))
+          from public.questoes_enem q where not q.anulada) as banco,
+       coalesce((select json_agg(distinct it.questao_id)
+          from public.simulado_enem_itens it join public.simulados_enem s on s.id = it.simulado_id
+          where s.aluno_id::text = (select j->>'aluno_id' from e)), '[]'::json) as vistos;""",
+                 "={{ JSON.stringify($json.body ?? {}) }}", uma_vez=True)
+    m = code(wf, "Montar simulado", [440, 0], ["distribuidor.lib.js", "sorteio.lib.js"], """const corpo = $('Pedido').first().json.body ?? {};
+const d = $input.first().json;
+const r = montarSimulado(corpo, d.disciplinas, d.assuntos, d.banco, d.vistos);
+return [{ json: {
+  aluno_id: corpo.aluno_id || null, tipo: r.pedido.tipo, spec: r.pedido, semente: r.semente,
+  n_questoes: r.itens.length, distribuicao: r.plano, avisos: r.avisos,
+  itens: r.itens.map(i => ({ numero: i.numero, questao_id: i.questao_id })),
+} }];""")
+    g = postgres(wf, "Gravar e devolver questoes", [660, 0], """-- Devolve so o que o aluno ve: imagem, area e disciplina. Sem gabarito, ano ou numero original.
+with e as (select $1::jsonb as j),
+s as (
+  insert into public.simulados_enem (aluno_id, tipo, spec, semente, n_questoes, distribuicao)
+  select nullif(j->>'aluno_id', '')::uuid, j->>'tipo', j->'spec', j->>'semente',
+         (j->>'n_questoes')::smallint, j->'distribuicao' from e
+  returning id
+),
+i as (
+  insert into public.simulado_enem_itens (simulado_id, numero, questao_id)
+  select s.id, x.numero, x.questao_id
+  from s, e, jsonb_to_recordset(e.j->'itens') as x(numero smallint, questao_id text)
+  returning numero, questao_id
+)
+select (select id from s) as simulado_id,
+       (select j->'spec' from e) as pedido,
+       (select j->'avisos' from e) as avisos,
+       (select json_agg(json_build_object('numero', i.numero, 'area', q.area, 'disciplina', q.disciplina,
+               'imagem_url', q.imagem_url, 'largura', q.imagem_largura, 'altura', q.imagem_altura)
+               order by i.numero)
+          from i join public.questoes_enem q on q.id = i.questao_id) as questoes;""",
+                 "={{ JSON.stringify($json) }}")
+    wf.cadeia(w, l, m, g)
+    wf.salvar()
+
+
+def wf_42():
+    wf = Workflow("42-simulado-entregar")
+    w = webhook(wf, "Pedido", "simulado-enem/entregar")
+    l = postgres(wf, "Ler gabarito", [220, 0], """-- O gabarito so e lido aqui, no back, para corrigir.
+with e as (select $1::jsonb as j)
+select (select count(*) from public.alunos a where a.id::text = (select j->>'aluno_id' from e)) as aluno_existe,
+       (select json_agg(json_build_object('numero', it.numero, 'area', q.area, 'disciplina', q.disciplina,
+               'gabarito', q.gabarito) order by it.numero)
+          from public.simulado_enem_itens it join public.questoes_enem q on q.id = it.questao_id
+          where it.simulado_id::text = (select j->>'simulado_id' from e)) as itens;""",
+                 "={{ JSON.stringify($json.body ?? {}) }}", uma_vez=True)
+    c = code(wf, "Corrigir", [440, 0], "correcao.lib.js", """const b = $('Pedido').first().json.body ?? {};
+const d = $input.first().json;
+if (!Number(d.aluno_existe)) throw new Error('Aluno nao cadastrado: registre email e nome antes de entregar.');
+if (!d.itens) throw new Error('Simulado nao encontrado.');
+const r = corrigir(d.itens, b.respostas);
+return [{ json: { simulado_id: b.simulado_id, aluno_id: b.aluno_id,
+                  origem: b.origem === 'pdf' ? 'pdf' : 'pagina', iniciado_em: b.iniciado_em || null, ...r } }];""")
+    g = postgres(wf, "Gravar entrega", [660, 0], """-- Uma entrega por aluno por simulado: a segunda nao sobrescreve a primeira.
+with e as (select $1::jsonb as j),
+ins as (
+  insert into public.entregas (simulado_id, aluno_id, origem, respostas, acertos, total, por_area,
+                               por_disciplina, iniciado_em)
+  select (j->>'simulado_id')::uuid, (j->>'aluno_id')::uuid, j->>'origem', j->'respostas',
+         (j->>'acertos')::smallint, (j->>'total')::smallint, j->'por_area', j->'por_disciplina',
+         nullif(j->>'iniciado_em', '')::timestamptz
+  from e
+  on conflict (simulado_id, aluno_id) do nothing
+  returning id
+)
+select (select id from ins) as entrega_id;""", "={{ JSON.stringify($json) }}")
+    r = code(wf, "Resultado", [880, 0], None, """const c = $('Corrigir').first().json;
+if (!$input.first().json.entrega_id) throw new Error('Este simulado ja foi entregue por este aluno.');
+// Agora sim o gabarito pode ir ao browser: a entrega ja esta gravada.
+return [{ json: { entrega_id: $input.first().json.entrega_id, acertos: c.acertos, total: c.total,
+                  por_area: c.por_area, por_disciplina: c.por_disciplina, questoes: c.detalhe } }];""")
+    wf.cadeia(w, l, c, g, r)
+    wf.salvar()
+
+
+def wf_43():
+    wf = Workflow("43-simulado-ver")
+    w = webhook(wf, "Pedido", "simulado-enem/ver")
+    s = postgres(wf, "Ler simulado", [220, 0], """-- Reabre um simulado pelo codigo (quem fez no PDF digita as respostas depois). Sem gabarito.
+with e as (select $1::jsonb as j)
+select s.id as simulado_id, s.spec as pedido,
+       (select json_agg(json_build_object('numero', it.numero, 'area', q.area, 'disciplina', q.disciplina,
+               'imagem_url', q.imagem_url, 'largura', q.imagem_largura, 'altura', q.imagem_altura)
+               order by it.numero)
+          from public.simulado_enem_itens it join public.questoes_enem q on q.id = it.questao_id
+          where it.simulado_id = s.id) as questoes
+from public.simulados_enem s
+where s.id::text = (select j->>'simulado_id' from e);""", "={{ JSON.stringify($json.body ?? {}) }}", uma_vez=True)
+    v = code(wf, "Conferir", [440, 0], None, """const r = $input.first().json;
+if (!r.simulado_id) throw new Error('Simulado nao encontrado. Confira o codigo impresso no PDF.');
+return [{ json: r }];""")
+    wf.cadeia(w, s, v)
+    wf.salvar()
+
+
 if __name__ == "__main__":
-    for f in (wf_99, wf_98, wf_10, wf_02, wf_00):
+    for f in (wf_99, wf_98, wf_10, wf_02, wf_00, wf_40, wf_41, wf_42, wf_43):
         f()

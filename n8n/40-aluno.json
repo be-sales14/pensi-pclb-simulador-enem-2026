@@ -1,0 +1,93 @@
+{
+  "name": "40-aluno",
+  "nodes": [
+    {
+      "id": "867e456e-51c1-5cd7-a114-3dd9bfc5798b",
+      "name": "Pedido",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "simulado-enem/aluno",
+        "authentication": "headerAuth",
+        "responseMode": "lastNode",
+        "options": {}
+      },
+      "webhookId": "9f9f6081-145f-519a-bf3a-7c57fdb6f02b",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "",
+          "name": "Simulado ENEM · token do front"
+        }
+      }
+    },
+    {
+      "id": "3483c5bc-b456-5964-89f2-06c3289c7596",
+      "name": "Validar",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        220,
+        0
+      ],
+      "parameters": {
+        "jsCode": "// Cadastro minimo: email (a chave do historico) e nome (so para exibir).\nconst b = $input.first().json.body ?? {};\nconst email = String(b.email ?? '').trim().toLowerCase();\nconst nome = String(b.nome ?? '').trim();\nif (!/^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$/.test(email)) throw new Error('Email invalido.');\nif (nome.length < 1 || nome.length > 120) throw new Error('Informe seu nome.');\nreturn [{ json: { email, nome } }];"
+      }
+    },
+    {
+      "id": "0e345a72-9a18-531f-9560-726c86db0e85",
+      "name": "Registrar e ler historico",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        440,
+        0
+      ],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "-- Mesmo email = mesmo aluno: atualiza o nome e devolve o historico de entregas.\nwith e as (select $1::jsonb as j),\na as (\n  insert into public.alunos (email, nome) select j->>'email', j->>'nome' from e\n  on conflict (email) do update set nome = excluded.nome, ultimo_acesso = now()\n  returning id, email::text as email, nome\n)\nselect a.id as aluno_id, a.email, a.nome,\n  coalesce((select json_agg(json_build_object(\n      'entrega_id', en.id, 'simulado_id', en.simulado_id, 'tipo', s.tipo, 'origem', en.origem,\n      'acertos', en.acertos, 'total', en.total, 'por_area', en.por_area, 'entregue_em', en.entregue_em)\n      order by en.entregue_em desc)\n    from public.entregas en join public.simulados_enem s on s.id = en.simulado_id\n    where en.aluno_id = a.id), '[]'::json) as historico\nfrom a;",
+        "options": {
+          "queryReplacement": "={{ JSON.stringify($json) }}"
+        }
+      },
+      "credentials": {
+        "postgres": {
+          "id": "",
+          "name": "Supabase Postgres"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Pedido": {
+      "main": [
+        [
+          {
+            "node": "Validar",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validar": {
+      "main": [
+        [
+          {
+            "node": "Registrar e ler historico",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "pinData": {}
+}
