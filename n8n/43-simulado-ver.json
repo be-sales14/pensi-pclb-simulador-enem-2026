@@ -14,7 +14,7 @@
         "httpMethod": "POST",
         "path": "simulado-enem/ver",
         "authentication": "headerAuth",
-        "responseMode": "lastNode",
+        "responseMode": "responseNode",
         "options": {}
       },
       "webhookId": "44993b2f-debd-57e6-8929-d46b775b20b7",
@@ -47,7 +47,8 @@
           "name": "Supabase Postgres"
         }
       },
-      "executeOnce": true
+      "executeOnce": true,
+      "alwaysOutputData": true
     },
     {
       "id": "f5c9fa7e-a966-5919-87d1-62e2c755f9b2",
@@ -59,7 +60,73 @@
         0
       ],
       "parameters": {
-        "jsCode": "const r = $input.first().json;\nif (!r.simulado_id) throw new Error('Simulado nao encontrado. Confira o codigo impresso no PDF.');\nreturn [{ json: r }];"
+        "jsCode": "const r = $input.first().json;\nif (!r.simulado_id) return [{ json: { erro: 'Simulado nao encontrado. Confira o codigo impresso no PDF.' } }];\nreturn [{ json: r }];"
+      }
+    },
+    {
+      "id": "37c89f08-f318-566b-b52b-d79f432d74b6",
+      "name": "Responder erro",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        660,
+        220
+      ],
+      "parameters": {
+        "respondWith": "firstIncomingItem",
+        "options": {
+          "responseCode": 400
+        }
+      }
+    },
+    {
+      "id": "64f61f6c-64d3-57c7-ac79-8192c6303849",
+      "name": "Conferir deu erro?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        440,
+        0
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "64f61f6c-64d3-57c7-ac79-8192c6303849",
+              "leftValue": "={{ !!$json.erro }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "7b2a390e-e658-5f7c-8cf5-d23b969c2514",
+      "name": "Responder",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        880,
+        0
+      ],
+      "parameters": {
+        "respondWith": "firstIncomingItem",
+        "options": {
+          "responseCode": 200
+        }
       }
     }
   ],
@@ -80,6 +147,35 @@
         [
           {
             "node": "Conferir",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Conferir": {
+      "main": [
+        [
+          {
+            "node": "Conferir deu erro?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Conferir deu erro?": {
+      "main": [
+        [
+          {
+            "node": "Responder erro",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Responder",
             "type": "main",
             "index": 0
           }

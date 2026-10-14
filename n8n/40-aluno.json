@@ -14,7 +14,7 @@
         "httpMethod": "POST",
         "path": "simulado-enem/aluno",
         "authentication": "headerAuth",
-        "responseMode": "lastNode",
+        "responseMode": "responseNode",
         "options": {}
       },
       "webhookId": "9f9f6081-145f-519a-bf3a-7c57fdb6f02b",
@@ -35,7 +35,7 @@
         0
       ],
       "parameters": {
-        "jsCode": "// Cadastro minimo: email (a chave do historico) e nome (so para exibir).\nconst b = $input.first().json.body ?? {};\nconst email = String(b.email ?? '').trim().toLowerCase();\nconst nome = String(b.nome ?? '').trim();\nif (!/^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$/.test(email)) throw new Error('Email invalido.');\nif (nome.length < 1 || nome.length > 120) throw new Error('Informe seu nome.');\nreturn [{ json: { email, nome } }];"
+        "jsCode": "// Cadastro minimo: email (a chave do historico) e nome (so para exibir).\nconst b = $input.first().json.body ?? {};\nconst email = String(b.email ?? '').trim().toLowerCase();\nconst nome = String(b.nome ?? '').trim();\nif (!/^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$/.test(email)) return [{ json: { erro: 'Email invalido.' } }];\nif (nome.length < 1 || nome.length > 120) return [{ json: { erro: 'Informe seu nome.' } }];\nreturn [{ json: { email, nome } }];"
       }
     },
     {
@@ -60,6 +60,72 @@
           "name": "Supabase Postgres"
         }
       }
+    },
+    {
+      "id": "48f25118-6114-5700-a9b6-438a8493febe",
+      "name": "Responder erro",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        660,
+        220
+      ],
+      "parameters": {
+        "respondWith": "firstIncomingItem",
+        "options": {
+          "responseCode": 400
+        }
+      }
+    },
+    {
+      "id": "7c59a366-cb78-5b4f-90ff-b06b29a317b5",
+      "name": "Validar deu erro?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        440,
+        0
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "7c59a366-cb78-5b4f-90ff-b06b29a317b5",
+              "leftValue": "={{ !!$json.erro }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "2f50758e-1aa1-5ff5-87bc-b219af6842cc",
+      "name": "Responder",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        880,
+        0
+      ],
+      "parameters": {
+        "respondWith": "firstIncomingItem",
+        "options": {
+          "responseCode": 200
+        }
+      }
     }
   ],
   "connections": {
@@ -78,7 +144,36 @@
       "main": [
         [
           {
+            "node": "Validar deu erro?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validar deu erro?": {
+      "main": [
+        [
+          {
+            "node": "Responder erro",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
             "node": "Registrar e ler historico",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Registrar e ler historico": {
+      "main": [
+        [
+          {
+            "node": "Responder",
             "type": "main",
             "index": 0
           }

@@ -43,11 +43,14 @@ export async function chamarN8n<T>(rota: Rota, corpo: unknown): Promise<T> {
   return dados as T;
 }
 
-// O n8n devolve o erro do no que falhou (ex.: "Este simulado ja foi entregue por este aluno.").
+// Erro esperado vem do n8n como 400 { erro } (ex.: "Este simulado ja foi entregue por este aluno.").
+// Excecao no workflow chega como 500 { message: "Error in workflow" }.
 function mensagemDeErro(dados: unknown, status: number) {
+  const d = dados as { erro?: string; message?: string; error?: { message?: string } } | null;
+  if (d?.erro) return d.erro;
   if (status === 401 || status === 403) return 'O front não está autorizado no n8n: confira o N8N_TOKEN.';
   if (status === 404) return 'O workflow do n8n não respondeu: confira se ele está ativo.';
-  const d = dados as { message?: string; error?: { message?: string } } | null;
+  if (d?.message === 'Error in workflow') return 'O servidor do simulado teve um problema. Tente de novo.';
   const msg = d?.message ?? d?.error?.message;
   return msg && msg.length < 300 ? msg : 'O servidor do simulado teve um problema. Tente de novo.';
 }

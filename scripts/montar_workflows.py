@@ -56,9 +56,11 @@ class Workflow:
         self.nodes.append(n)
         return nome
 
-    def liga(self, de, para, tipo="main"):
+    def liga(self, de, para, tipo="main", saida=0):
         saidas = self.connections.setdefault(de, {}).setdefault(tipo, [[]])
-        saidas[0].append({"node": para, "type": tipo, "index": 0})
+        while len(saidas) <= saida:
+            saidas.append([])
+        saidas[saida].append({"node": para, "type": tipo, "index": 0})
 
     def cadeia(self, *nomes):
         for a, b in zip(nomes, nomes[1:]):
@@ -381,9 +383,48 @@ CRED_TOKEN = {"httpHeaderAuth": {"id": "", "name": "Simulado ENEM · token do fr
 def webhook(wf, nome, caminho):
     return wf.no(nome, "n8n-nodes-base.webhook", 2, [0, 0],
                  {"httpMethod": "POST", "path": caminho, "authentication": "headerAuth",
-                  "responseMode": "lastNode", "options": {}},
+                  "responseMode": "responseNode", "options": {}},
                  webhookId=str(uuid.uuid5(uuid.NAMESPACE_URL, f"simulado-enem/{wf.nome}/webhook")),
                  credentials=CRED_TOKEN)
+
+
+# Erro esperado (email invalido, ja entregue, codigo errado) nao lanca excecao: o no Code devolve
+# { erro } e um IF desvia para "Responder erro" (400). Excecao no n8n vira 500 "Error in workflow"
+# e a mensagem se perde no caminho ate o aluno.
+def tem_erro(wf, nome, pos):
+    return wf.no(nome, "n8n-nodes-base.if", 2.2, pos, {
+        "conditions": {
+            "options": {"caseSensitive": True, "leftValue": "", "typeValidation": "strict", "version": 2},
+            "conditions": [{"id": str(uuid.uuid5(uuid.NAMESPACE_URL, f"simulado-enem/{wf.nome}/{nome}")),
+                            "leftValue": "={{ !!$json.erro }}", "rightValue": "",
+                            "operator": {"type": "boolean", "operation": "true", "singleValue": True}}],
+            "combinator": "and"},
+        "options": {}})
+
+
+def responder(wf, nome, pos, codigo=200):
+    return wf.no(nome, "n8n-nodes-base.respondToWebhook", 1.1, pos, {
+        "respondWith": "firstIncomingItem", "options": {"responseCode": codigo}})
+
+
+def cadeia_com_erros(wf, *nos):
+    """Liga a cadeia; depois de cada no Code que pode devolver { erro }, um IF desvia para o 400."""
+    erro = responder(wf, "Responder erro", [len(nos) * 220, 220], 400)
+    anterior, saida = nos[0], 0           # saida 1 do IF = "nao deu erro": segue a cadeia
+    x = 220
+    for n in nos[1:]:
+        if isinstance(n, tuple):          # (no_code, pode_errar)
+            n = n[0]
+            wf.liga(anterior, n, saida=saida)
+            se = tem_erro(wf, f"{n} deu erro?", [x + 220, 0])
+            wf.liga(n, se)
+            wf.liga(se, erro, saida=0)
+            anterior, saida, x = se, 1, x + 220
+            continue
+        wf.liga(anterior, n, saida=saida)
+        anterior, saida = n, 0
+    ok = responder(wf, "Responder", [x + 440, 0])
+    wf.liga(anterior, ok, saida=saida)
 
 
 def wf_40():
@@ -393,8 +434,8 @@ def wf_40():
 const b = $input.first().json.body ?? {};
 const email = String(b.email ?? '').trim().toLowerCase();
 const nome = String(b.nome ?? '').trim();
-if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) throw new Error('Email invalido.');
-if (nome.length < 1 || nome.length > 120) throw new Error('Informe seu nome.');
+if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return [{ json: { erro: 'Email invalido.' } }];
+if (nome.length < 1 || nome.length > 120) return [{ json: { erro: 'Informe seu nome.' } }];
 return [{ json: { email, nome } }];""")
     s = postgres(wf, "Registrar e ler historico", [440, 0], """-- Mesmo email = mesmo aluno: atualiza o nome e devolve o historico de entregas.
 with e as (select $1::jsonb as j),
@@ -411,7 +452,7 @@ select a.id as aluno_id, a.email, a.nome,
     from public.entregas en join public.simulados_enem s on s.id = en.simulado_id
     where en.aluno_id = a.id), '[]'::json) as historico
 from a;""", "={{ JSON.stringify($json) }}")
-    wf.cadeia(w, v, s)
+    cadeia_com_erros(wf, w, (v, True), s)
     wf.salvar()
 
 
@@ -432,7 +473,9 @@ select (select json_agg(d) from public.pesos_disciplina d) as disciplinas,
                  "={{ JSON.stringify($json.body ?? {}) }}", uma_vez=True)
     m = code(wf, "Montar simulado", [440, 0], ["distribuidor.lib.js", "sorteio.lib.js"], """const corpo = $('Pedido').first().json.body ?? {};
 const d = $input.first().json;
-const r = montarSimulado(corpo, d.disciplinas, d.assuntos, d.banco, d.vistos);
+let r;
+try { r = montarSimulado(corpo, d.disciplinas, d.assuntos, d.banco, d.vistos); }
+catch (e) { return [{ json: { erro: e.message } }]; }   // pedido invalido ou banco insuficiente
 return [{ json: {
   aluno_id: corpo.aluno_id || null, tipo: r.pedido.tipo, spec: r.pedido, semente: r.semente,
   n_questoes: r.itens.length, distribuicao: r.plano, avisos: r.avisos,
@@ -460,7 +503,7 @@ select (select id from s) as simulado_id,
                order by i.numero)
           from i join public.questoes_enem q on q.id = i.questao_id) as questoes;""",
                  "={{ JSON.stringify($json) }}")
-    wf.cadeia(w, l, m, g)
+    cadeia_com_erros(wf, w, l, (m, True), g)
     wf.salvar()
 
 
@@ -477,9 +520,10 @@ select (select count(*) from public.alunos a where a.id::text = (select j->>'alu
                  "={{ JSON.stringify($json.body ?? {}) }}", uma_vez=True)
     c = code(wf, "Corrigir", [440, 0], "correcao.lib.js", """const b = $('Pedido').first().json.body ?? {};
 const d = $input.first().json;
-if (!Number(d.aluno_existe)) throw new Error('Aluno nao cadastrado: registre email e nome antes de entregar.');
-if (!d.itens) throw new Error('Simulado nao encontrado.');
-const r = corrigir(d.itens, b.respostas);
+if (!Number(d.aluno_existe)) return [{ json: { erro: 'Aluno nao cadastrado: registre email e nome antes de entregar.' } }];
+if (!d.itens) return [{ json: { erro: 'Simulado nao encontrado.' } }];
+let r;
+try { r = corrigir(d.itens, b.respostas); } catch (e) { return [{ json: { erro: e.message } }]; }
 return [{ json: { simulado_id: b.simulado_id, aluno_id: b.aluno_id,
                   origem: b.origem === 'pdf' ? 'pdf' : 'pagina', iniciado_em: b.iniciado_em || null, ...r } }];""")
     g = postgres(wf, "Gravar entrega", [660, 0], """-- Uma entrega por aluno por simulado: a segunda nao sobrescreve a primeira.
@@ -496,11 +540,11 @@ ins as (
 )
 select (select id from ins) as entrega_id;""", "={{ JSON.stringify($json) }}")
     r = code(wf, "Resultado", [880, 0], None, """const c = $('Corrigir').first().json;
-if (!$input.first().json.entrega_id) throw new Error('Este simulado ja foi entregue por este aluno.');
+if (!$input.first().json.entrega_id) return [{ json: { erro: 'Este simulado ja foi entregue por este aluno.' } }];
 // Agora sim o gabarito pode ir ao browser: a entrega ja esta gravada.
 return [{ json: { entrega_id: $input.first().json.entrega_id, acertos: c.acertos, total: c.total,
                   por_area: c.por_area, por_disciplina: c.por_disciplina, questoes: c.detalhe } }];""")
-    wf.cadeia(w, l, c, g, r)
+    cadeia_com_erros(wf, w, l, (c, True), g, (r, True))
     wf.salvar()
 
 
@@ -521,10 +565,12 @@ where lower(e.j->>'simulado_id') ~ '^[0-9a-f-]{8,36}$'
   and s.id::text like lower(e.j->>'simulado_id') || '%'
 order by s.criado_em desc
 limit 1;""", "={{ JSON.stringify($json.body ?? {}) }}", uma_vez=True)
+    # Codigo que nao existe = zero linhas; sem isto o fluxo para e o n8n responde 500.
+    wf.nodes[-1]["alwaysOutputData"] = True
     v = code(wf, "Conferir", [440, 0], None, """const r = $input.first().json;
-if (!r.simulado_id) throw new Error('Simulado nao encontrado. Confira o codigo impresso no PDF.');
+if (!r.simulado_id) return [{ json: { erro: 'Simulado nao encontrado. Confira o codigo impresso no PDF.' } }];
 return [{ json: r }];""")
-    wf.cadeia(w, s, v)
+    cadeia_com_erros(wf, w, s, (v, True))
     wf.salvar()
 
 
