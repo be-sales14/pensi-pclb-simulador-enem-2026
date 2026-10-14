@@ -1,0 +1,664 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Guia de instalação · Simulado ENEM</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --tinta: #15191F; --texto: #3A414C; --suave: #59616E; --linha: #DDE2EA; --borda: #C4CBD6;
+    --superficie: #F3F5F8; --destaque: #1D4ED8; --destaque-claro: #E8EEFC; --alerta: #B45309;
+    --alerta-claro: #FDF3E7; --certo: #15803D; --certo-claro: #E9F6EE; --errado: #B91C1C; --marca: #EA580C;
+  }
+  @page { size: A4; margin: 0; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: #fff; color: var(--tinta); font-family: 'IBM Plex Sans', system-ui, sans-serif; font-size: 10.5pt; line-height: 1.5; }
+  code, .mono { font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: .92em; }
+  code { background: var(--superficie); border: 1px solid var(--linha); border-radius: 4px; padding: 0 4px; white-space: nowrap; }
+  .pagina { width: 210mm; height: 297mm; padding: 16mm 17mm 14mm; position: relative; page-break-after: always; overflow: hidden; display: flex; flex-direction: column; gap: 4mm; }
+  .pagina:last-child { page-break-after: auto; }
+  .pagina.apertada { gap: 2.6mm; }
+  .print.corte { max-height: 104mm; width: 100%; object-fit: cover; object-position: top; }
+  .rodape { position: absolute; bottom: 8mm; left: 17mm; right: 17mm; display: flex; justify-content: space-between; font-size: 8pt; color: var(--suave); border-top: 1px solid var(--linha); padding-top: 2mm; }
+  h1 { font-size: 22pt; line-height: 1.15; margin: 0; }
+  h2 { font-size: 17pt; line-height: 1.2; margin: 0; }
+  h3 { font-size: 12pt; margin: 2mm 0 0; }
+  p { margin: 0; }
+  ol, ul { margin: 0; padding-left: 5.5mm; }
+  li { margin: 1.2mm 0; }
+  .passo-num { display: inline-flex; align-items: center; gap: 3mm; font-size: 9pt; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--destaque); }
+  .passo-num b { display: inline-flex; width: 9mm; height: 9mm; border-radius: 50%; background: var(--destaque); color: #fff; align-items: center; justify-content: center; font-size: 13pt; letter-spacing: 0; }
+  .lead { font-size: 11.5pt; color: var(--texto); }
+  .caixa { border-radius: 3mm; padding: 3.5mm 4.5mm; }
+  .dica { background: var(--destaque-claro); }
+  .atencao { background: var(--alerta-claro); border-left: 1.2mm solid var(--alerta); }
+  .ok { background: var(--certo-claro); border-left: 1.2mm solid var(--certo); }
+  .caixa b.t { display: block; margin-bottom: 1mm; }
+  table { border-collapse: collapse; width: 100%; font-size: 9.5pt; }
+  th, td { text-align: left; padding: 1.6mm 2.4mm; border-bottom: 1px solid var(--linha); vertical-align: top; }
+  th { background: var(--superficie); font-weight: 600; }
+  .print { border: 1px solid var(--borda); border-radius: 2mm; max-width: 100%; display: block; }
+  .legenda { font-size: 8.5pt; color: var(--suave); margin-top: 1.2mm; }
+  .duas { display: grid; grid-template-columns: 1fr 1fr; gap: 5mm; }
+  .tecla { display: inline-block; border: 1px solid var(--borda); border-bottom-width: 2px; border-radius: 3px; padding: 0 1.5mm; font-size: .9em; background: #fff; }
+  .botao { display: inline-block; border-radius: 4px; padding: 0 2mm; font-weight: 600; font-size: .92em; background: var(--tinta); color: #fff; }
+
+  /* ---------- ilustracoes de tela (n8n, Vercel, VS Code) ---------- */
+  .tela { border: 1px solid var(--borda); border-radius: 2.5mm; overflow: hidden; background: #fff; font-size: 9pt; box-shadow: 0 1mm 3mm rgba(21,25,31,.06); }
+  .tela .barra { display: flex; align-items: center; gap: 1.5mm; background: var(--superficie); border-bottom: 1px solid var(--linha); padding: 1.8mm 3mm; }
+  .tela .barra i { width: 2.4mm; height: 2.4mm; border-radius: 50%; background: var(--borda); }
+  .tela .barra span { margin-left: 2mm; color: var(--suave); font-size: 8pt; }
+  .tela .corpo { padding: 4mm 5mm; display: flex; flex-direction: column; gap: 2.6mm; position: relative; }
+  .ilustracao { font-size: 7.5pt; color: var(--suave); text-align: right; margin-top: 1mm; }
+  .campo { display: flex; flex-direction: column; gap: .8mm; }
+  .campo label { font-weight: 500; color: var(--texto); }
+  .campo .valor { border: 1px solid var(--borda); border-radius: 1.5mm; padding: 1.4mm 2.4mm; min-height: 7mm; color: var(--tinta); font-family: 'IBM Plex Mono', monospace; font-size: 8.5pt; }
+  .campo .valor.vazio { color: var(--suave); font-family: 'IBM Plex Sans', sans-serif; font-style: italic; }
+  .marca { outline: .7mm solid var(--marca); outline-offset: .6mm; border-radius: 1.5mm; position: relative; }
+  .bolinha { position: absolute; top: -3mm; right: -3mm; width: 5.5mm; height: 5.5mm; border-radius: 50%; background: var(--marca); color: #fff; font-size: 8pt; font-weight: 700; display: flex; align-items: center; justify-content: center; z-index: 2; }
+  .btn-n8n { background: #EA4B71; color: #fff; border-radius: 1.5mm; padding: 1.2mm 3mm; font-weight: 600; display: inline-block; }
+  .btn-claro { border: 1px solid var(--borda); border-radius: 1.5mm; padding: 1.2mm 3mm; display: inline-block; background: #fff; }
+  .btn-vercel { background: #000; color: #fff; border-radius: 1.5mm; padding: 1.4mm 4mm; font-weight: 600; display: inline-block; }
+  .menu { border: 1px solid var(--borda); border-radius: 1.5mm; box-shadow: 0 1mm 3mm rgba(0,0,0,.12); background: #fff; width: 52mm; padding: 1mm 0; }
+  .menu div { padding: 1.2mm 3mm; }
+  .menu div.sel { background: var(--destaque-claro); font-weight: 600; }
+  .no { border: 1px solid var(--borda); border-radius: 2mm; padding: 2mm 3mm; background: #fff; display: inline-flex; flex-direction: column; align-items: center; gap: .5mm; min-width: 24mm; font-size: 8pt; }
+  .no .icone { width: 9mm; height: 9mm; border-radius: 2mm; background: var(--superficie); display: flex; align-items: center; justify-content: center; font-size: 10pt; }
+  .fio { flex: 1; height: 0; border-top: .4mm solid var(--borda); min-width: 4mm; }
+
+  /* ---------- capa ---------- */
+  .capa { background: var(--tinta); color: #fff; justify-content: space-between; padding: 24mm 20mm; }
+  .capa h1 { font-size: 34pt; color: #fff; }
+  .capa .sub { font-size: 14pt; color: #C9D2E3; max-width: 140mm; }
+  .capa .mapa { display: flex; gap: 3mm; flex-wrap: wrap; }
+  .capa .peca { border: 1px solid #3A4250; border-radius: 3mm; padding: 4mm; width: 52mm; }
+  .capa .peca b { display: block; font-size: 12pt; }
+  .capa .peca span { color: #AEB8CA; font-size: 9pt; }
+  .fluxo { display: flex; align-items: stretch; gap: 0; }
+  .fluxo .peca2 { flex: 1; border: 1px solid var(--linha); border-radius: 3mm; padding: 3mm; text-align: center; background: #fff; }
+  .fluxo .peca2 b { display: block; font-size: 11pt; }
+  .fluxo .peca2 span { font-size: 8.5pt; color: var(--suave); }
+  .fluxo .seta { display: flex; align-items: center; padding: 0 1.5mm; color: var(--suave); font-size: 14pt; }
+  .check { list-style: none; padding: 0; }
+  .check li { padding-left: 7mm; position: relative; }
+  .check li::before { content: ''; position: absolute; left: 0; top: .9mm; width: 4mm; height: 4mm; border: .35mm solid var(--texto); border-radius: 1mm; }
+</style>
+</head>
+<body>
+
+<!-- ============================================================ CAPA -->
+<section class="pagina capa">
+  <div style="display:flex;flex-direction:column;gap:6mm">
+    <span style="font-size:10pt;letter-spacing:.14em;text-transform:uppercase;color:#AEB8CA">Guia de instalação · passo a passo</span>
+    <h1>Colocando o Simulado ENEM no ar</h1>
+    <p class="sub">Como ligar o site, o n8n e o banco de questões nas <b>suas</b> contas, sem precisar saber programar.</p>
+  </div>
+  <div class="mapa">
+    <div class="peca"><b>Vercel</b><span>o site que o aluno abre</span></div>
+    <div class="peca"><b>n8n</b><span>quem sorteia e corrige as provas</span></div>
+    <div class="peca"><b>Supabase</b><span>o banco com as 1.295 questões</span></div>
+  </div>
+  <div style="display:flex;justify-content:space-between;align-items:flex-end;color:#AEB8CA;font-size:9.5pt">
+    <span>Para: Bernardo<br>Tempo: cerca de 40 minutos</span>
+    <span>Projeto Simulado ENEM · 2026</span>
+  </div>
+</section>
+
+<!-- ============================================================ ANTES DE COMECAR -->
+<section class="pagina apertada">
+  <h2>Antes de começar</h2>
+  <p class="lead">O simulado tem três partes que conversam entre si. Você vai instalar duas delas (o n8n e a Vercel). A terceira (o banco, no Supabase) já é sua e já está pronta.</p>
+
+  <div class="fluxo">
+    <div class="peca2"><b>Aluno</b><span>abre o site no celular ou computador</span></div>
+    <div class="seta">→</div>
+    <div class="peca2" style="border-color:var(--destaque)"><b>Vercel</b><span>mostra as telas: montar, fazer a prova, ver a nota</span></div>
+    <div class="seta">→</div>
+    <div class="peca2" style="border-color:var(--destaque)"><b>n8n</b><span>sorteia as questões e corrige as respostas</span></div>
+    <div class="seta">→</div>
+    <div class="peca2"><b>Supabase</b><span>guarda questões, alunos e notas</span></div>
+  </div>
+
+  <div class="caixa dica">
+    <b class="t">Pense numa lanchonete</b>
+    A <b>Vercel</b> é o balcão, onde o cliente faz o pedido. O <b>n8n</b> é a cozinha: recebe o pedido, prepara e devolve. O <b>Supabase</b> é a despensa com os ingredientes. Para a cozinha só aceitar pedidos do <i>nosso</i> balcão, os dois combinam uma <b>senha</b>: é o <code>N8N_TOKEN</code>.
+  </div>
+
+  <h3>O que você precisa ter</h3>
+  <ul class="check">
+    <li>Conta no <b>GitHub</b> (é a sua: o projeto está em <code>be-sales14/pensi-pclb-simulador-enem-2026</code>).</li>
+    <li>Conta no <b>n8n</b>, aberta no navegador.</li>
+    <li>Conta na <b>Vercel</b> (<span class="mono">vercel.com</span>). Se não tiver, crie com o botão <i>Continue with GitHub</i>: fica tudo ligado.</li>
+    <li>O <b>VS Code</b> instalado (você já tem).</li>
+    <li>O arquivo <code>simulado-enem-bernardo.env</code> que o Thiago mandou.</li>
+  </ul>
+
+  <h3>O roteiro</h3>
+  <table>
+    <tr><th style="width:12mm">Passo</th><th>O que você faz</th><th style="width:20mm">Onde</th></tr>
+    <tr><td>1</td><td>Baixar o projeto e abrir o arquivo do Thiago</td><td>VS Code</td></tr>
+    <tr><td>2</td><td>Criar a credencial do banco (Supabase Postgres)</td><td>n8n</td></tr>
+    <tr><td>3</td><td>Criar a credencial da senha do site (token)</td><td>n8n</td></tr>
+    <tr><td>4</td><td>Importar os 5 workflows</td><td>n8n</td></tr>
+    <tr><td>5</td><td>Ligar as credenciais em cada workflow e publicar</td><td>n8n</td></tr>
+    <tr><td>6</td><td>Descobrir o endereço do seu n8n</td><td>n8n</td></tr>
+    <tr><td>7</td><td>Criar o projeto na Vercel e preencher as variáveis</td><td>Vercel</td></tr>
+    <tr><td>8</td><td>Testar o site</td><td>navegador</td></tr>
+  </table>
+
+  <div class="caixa atencao">
+    <b class="t">Regra de ouro: sempre copie do arquivo</b>
+    O arquivo do Thiago tem senhas. Toda vez que um passo pedir um valor, <b>volte ao arquivo no VS Code, copie e cole na hora</b>. Não confie na memória do “copiar”: se você copiar outra coisa no meio do caminho, o valor anterior some.
+  </div>
+  <div class="rodape"><span>Guia de instalação · Simulado ENEM</span><span>2</span></div>
+</section>
+
+<!-- ============================================================ PASSO 1 -->
+<section class="pagina">
+  <span class="passo-num"><b>1</b>VS Code</span>
+  <h2>Baixar o projeto e abrir o arquivo do Thiago</h2>
+  <p class="lead">Os workflows do n8n são arquivos que estão no projeto do GitHub. Vamos trazer o projeto para o seu computador.</p>
+
+  <ol>
+    <li>Abra o <b>VS Code</b>.</li>
+    <li>Aperte <span class="tecla">⌘ Cmd</span> + <span class="tecla">⇧ Shift</span> + <span class="tecla">P</span> (no Windows: <span class="tecla">Ctrl</span> + <span class="tecla">Shift</span> + <span class="tecla">P</span>). Abre uma caixa de busca no alto.</li>
+    <li>Digite <b>Git: Clone</b> e aperte <span class="tecla">Enter</span>.</li>
+    <li>Cole o endereço: <code>https://github.com/be-sales14/pensi-pclb-simulador-enem-2026</code> e aperte <span class="tecla">Enter</span>.</li>
+    <li>Escolha uma pasta (por exemplo, <i>Documentos</i>) e clique em <b>Open</b> quando o VS Code perguntar se quer abrir o projeto.</li>
+  </ol>
+
+  <div>
+    <div class="tela">
+      <div class="barra"><i></i><i></i><i></i><span>Visual Studio Code</span></div>
+      <div class="corpo" style="align-items:center;padding-top:5mm;padding-bottom:6mm;background:#FAFBFC">
+        <div class="marca" style="width:120mm;border:1px solid var(--borda);border-radius:1.5mm;background:#fff">
+          <span class="bolinha">3</span>
+          <div style="padding:2mm 3mm;border-bottom:1px solid var(--linha)" class="mono">&gt;Git: Clone</div>
+          <div style="padding:1.6mm 3mm;background:var(--destaque-claro)"><b>Git: Clone</b></div>
+          <div style="padding:1.6mm 3mm;color:var(--suave)">Git: Clone (Recursive)</div>
+        </div>
+      </div>
+    </div>
+    <p class="ilustracao">Ilustração simplificada da caixa de comandos do VS Code</p>
+  </div>
+
+  <h3>Agora abra o arquivo do Thiago</h3>
+  <ol>
+    <li>Salve o arquivo <code>simulado-enem-bernardo.env</code> que o Thiago mandou numa pasta fácil (por exemplo, <i>Downloads</i>).</li>
+    <li>No VS Code: menu <b>File → Open File…</b> e escolha esse arquivo. Deixe essa aba aberta até o fim do guia.</li>
+  </ol>
+
+  <div class="tela">
+    <div class="barra"><i></i><i></i><i></i><span>simulado-enem-bernardo.env</span></div>
+    <div class="corpo mono" style="font-size:8.3pt;gap:.6mm;line-height:1.55">
+      <span style="color:var(--suave)"># --- n8n · credencial "Supabase Postgres" ---</span>
+      <span>HOST=aws-0-us-east-1.pooler.supabase.com</span>
+      <span>DATABASE=postgres</span>
+      <span>USER=postgres.uwnuehhebwckbbhkaqyx</span>
+      <span>PASSWORD=<span style="color:var(--suave)">••••••••••••••••</span></span>
+      <span>PORT=5432</span>
+      <span>SSL=require</span>
+      <span style="color:var(--suave);margin-top:1.5mm"># --- n8n · credencial "Simulado ENEM · token do front" ---</span>
+      <span>N8N_TOKEN=<span style="color:var(--suave)">••••••••••••••••••••••••••••••••</span></span>
+      <span style="color:var(--suave);margin-top:1.5mm"># --- Vercel ---</span>
+      <span>N8N_WEBHOOK_BASE=<span style="color:var(--suave)">(você preenche no passo 6)</span></span>
+    </div>
+  </div>
+  <p class="legenda">Para copiar um valor: selecione só o que vem <b>depois do sinal =</b> e aperte <span class="tecla">⌘ Cmd</span> + <span class="tecla">C</span>.</p>
+
+  <div class="caixa atencao">
+    <b class="t">Esse arquivo é segredo</b>
+    Não mande em grupo, não cole no GitHub e não coloque dentro da pasta do projeto. Ele fica só no seu computador, no n8n e na Vercel.
+  </div>
+  <div class="rodape"><span>Guia de instalação · Simulado ENEM</span><span>3</span></div>
+</section>
+
+<!-- ============================================================ PASSO 2 -->
+<section class="pagina">
+  <span class="passo-num"><b>2</b>n8n</span>
+  <h2>Credencial do banco: “Supabase Postgres”</h2>
+  <p class="lead">Credencial é o “crachá” que o n8n usa para entrar num serviço. Esta deixa o n8n ler e gravar no banco de questões.</p>
+
+  <ol>
+    <li>No n8n, na tela inicial (<b>Overview</b>), clique na setinha ao lado de <b>Create</b>, no alto à direita, e escolha <b>Credential</b>.</li>
+    <li>Na busca, digite <b>Postgres</b>, escolha <b>Postgres</b> e clique em <b>Continue</b>.</li>
+    <li>Clique no nome lá em cima (vem escrito <i>Postgres account</i>) e troque por <b>Supabase Postgres</b>, exatamente assim, com o P maiúsculo.</li>
+    <li>Preencha cada campo copiando do arquivo, conforme a tabela.</li>
+    <li>Clique em <b>Save</b>. Aparece uma faixa verde <i>Connection tested successfully</i>.</li>
+  </ol>
+
+  <div class="duas" style="grid-template-columns:1.05fr 1fr;align-items:start">
+    <div>
+      <div class="tela">
+        <div class="barra"><i></i><i></i><i></i><span>n8n · nova credencial</span></div>
+        <div class="corpo">
+          <div class="marca" style="font-weight:600;font-size:10.5pt;padding:.5mm 1mm;align-self:flex-start"><span class="bolinha">3</span>Supabase Postgres</div>
+          <div class="campo"><label>Host</label><div class="valor">aws-0-us-east-1.pooler…</div></div>
+          <div class="campo"><label>Database</label><div class="valor">postgres</div></div>
+          <div class="campo"><label>User</label><div class="valor">postgres.uwnuehhebw…</div></div>
+          <div class="campo"><label>Password</label><div class="valor">••••••••••••</div></div>
+          <div class="campo"><label>Ignore SSL Issues (Insecure)</label><div class="valor vazio">desligado</div></div>
+          <div class="campo"><label>SSL</label><div class="valor">Require</div></div>
+          <div class="campo"><label>Port</label><div class="valor">5432</div></div>
+          <div style="display:flex;justify-content:flex-end"><span class="btn-n8n marca"><span class="bolinha">5</span>Save</span></div>
+        </div>
+      </div>
+      <p class="ilustracao">Ilustração simplificada · os nomes dos campos são os do n8n</p>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:4mm">
+      <table>
+        <tr><th>Campo no n8n</th><th>O que colocar</th></tr>
+        <tr><td>Host</td><td>valor de <code>HOST</code></td></tr>
+        <tr><td>Database</td><td>valor de <code>DATABASE</code></td></tr>
+        <tr><td>User</td><td>valor de <code>USER</code></td></tr>
+        <tr><td>Password</td><td>valor de <code>PASSWORD</code></td></tr>
+        <tr><td>Maximum Number of Connections</td><td>deixe como está</td></tr>
+        <tr><td>Ignore SSL Issues</td><td><b>desligado</b></td></tr>
+        <tr><td>SSL</td><td><b>Require</b></td></tr>
+        <tr><td>Port</td><td><code>5432</code></td></tr>
+        <tr><td>SSH Tunnel</td><td>desligado</td></tr>
+      </table>
+      <div class="caixa dica">
+        <b class="t">O usuário tem um ponto no meio</b>
+        É <code>postgres.uwnuehhebwckbbhkaqyx</code>, não só <code>postgres</code>. Copie do arquivo para não errar.
+      </div>
+      <div class="caixa atencao">
+        <b class="t">Deu “password authentication failed”?</b>
+        Apague todo o campo Password e cole de novo. O navegador às vezes preenche uma senha antiga sozinho.
+      </div>
+    </div>
+  </div>
+  <div class="rodape"><span>Guia de instalação · Simulado ENEM</span><span>4</span></div>
+</section>
+
+<!-- ============================================================ PASSO 3 -->
+<section class="pagina">
+  <span class="passo-num"><b>3</b>n8n</span>
+  <h2>Credencial da senha do site: o token</h2>
+  <p class="lead">É a senha combinada entre o site (Vercel) e o n8n. Sem ela, qualquer pessoa poderia usar o seu n8n; com ela, só o seu site consegue.</p>
+
+  <ol>
+    <li>De novo: <b>Create → Credential</b>.</li>
+    <li>Busque <b>Header Auth</b>, escolha e clique em <b>Continue</b>.</li>
+    <li>Troque o nome lá em cima (<i>Header Auth account</i>) por: <b>Simulado ENEM · token do front</b>. O ponto do meio (·) pode ser copiado daqui mesmo.</li>
+    <li>Em <b>Name</b>, <b>digite</b> à mão: <code>x-simulado-token</code></li>
+    <li>Vá ao VS Code, copie o valor de <code>N8N_TOKEN</code> (64 letras e números), volte e cole em <b>Value</b>.</li>
+    <li>Clique em <b>Save</b>.</li>
+  </ol>
+
+  <div>
+    <img class="print" src="img/n8n-credencial-token.png" alt="Credencial Header Auth no n8n com Name x-simulado-token e Value preenchido">
+    <p class="legenda">Print real do n8n: é assim que a credencial fica. O Value aparece como bolinhas, e está certo.</p>
+  </div>
+
+  <div class="caixa atencao">
+    <b class="t">Por que digitar o Name e copiar o Value?</b>
+    Se você copiar o <code>x-simulado-token</code> daqui, o valor do token que estava copiado some. Digitando o Name, você só precisa copiar uma coisa: o token.
+  </div>
+  <div class="caixa dica">
+    <b class="t">O mesmo token vai em dois lugares</b>
+    Aqui no n8n (agora) e na Vercel (passo 7). Se forem diferentes, o site mostra “O front não está autorizado no n8n”.
+  </div>
+  <div class="rodape"><span>Guia de instalação · Simulado ENEM</span><span>5</span></div>
+</section>
+
+<!-- ============================================================ PASSO 4 -->
+<section class="pagina">
+  <span class="passo-num"><b>4</b>n8n</span>
+  <h2>Importar os 5 workflows</h2>
+  <p class="lead">Workflow é uma “receita” do n8n: uma sequência de caixinhas que fazem uma tarefa. Eles já estão prontos dentro do projeto, na pasta <code>n8n</code>.</p>
+
+  <table>
+    <tr><th style="width:52mm">Arquivo</th><th>O que faz</th></tr>
+    <tr><td><code>40-aluno.json</code></td><td>Cadastra o aluno (email e nome) e devolve o histórico de notas.</td></tr>
+    <tr><td><code>41-simulado-montar.json</code></td><td>Sorteia as questões na proporção da prova oficial.</td></tr>
+    <tr><td><code>42-simulado-entregar.json</code></td><td>Corrige as respostas e grava a nota.</td></tr>
+    <tr><td><code>43-simulado-ver.json</code></td><td>Reabre uma prova pelo código (para quem fez no papel).</td></tr>
+    <tr><td><code>47-manter-supabase-ativo.json</code></td><td>A cada 6 horas mexe no banco, para o Supabase gratuito não desligar o projeto por falta de uso.</td></tr>
+  </table>
+
+  <h3>Para cada um dos 5 arquivos</h3>
+  <ol>
+    <li>No n8n, clique em <b>Create → Workflow</b>. Abre uma tela vazia.</li>
+    <li>Clique nos <b>três pontinhos ⋯</b> no alto à direita e escolha <b>Import from File…</b></li>
+    <li>Vá até a pasta do projeto que você baixou no passo 1, entre em <code>n8n</code> e escolha o arquivo.</li>
+    <li>As caixinhas aparecem na tela. Clique em <b>Save</b>. Ainda não publique: isso é no passo 5.</li>
+  </ol>
+
+  <div class="duas" style="align-items:start">
+    <div>
+      <div class="tela">
+        <div class="barra"><i></i><i></i><i></i><span>n8n · workflow novo</span></div>
+        <div class="corpo" style="min-height:52mm">
+          <div style="display:flex;justify-content:flex-end;gap:2mm;align-items:center">
+            <span class="btn-claro">Save</span><span class="btn-claro">Publish</span>
+            <span class="btn-claro marca" style="padding:1.2mm 2.2mm"><span class="bolinha">2</span>⋯</span>
+          </div>
+          <div style="display:flex;justify-content:flex-end">
+            <div class="menu">
+              <div>Duplicate</div><div>Download</div>
+              <div>Import from URL…</div>
+              <div class="sel marca" style="background:var(--destaque-claro)"><span class="bolinha">2</span>Import from File…</div>
+              <div>Settings</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <p class="ilustracao">Ilustração simplificada do menu ⋯ do n8n</p>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:4mm">
+      <div class="caixa dica">
+        <b class="t">Vai aparecer aviso vermelho nas caixinhas</b>
+        É normal: o arquivo não traz as credenciais (senhas nunca vão para o GitHub). No passo 5 você liga cada uma.
+      </div>
+      <div class="caixa atencao">
+        <b class="t">Os outros arquivos da pasta</b>
+        A pasta <code>n8n</code> tem outros workflows (00, 02, 10, 44, 45, 46, 98, 99). O site <b>não</b> precisa deles: são da primeira versão do projeto e ficam como material de aula.
+      </div>
+    </div>
+  </div>
+  <div class="rodape"><span>Guia de instalação · Simulado ENEM</span><span>6</span></div>
+</section>
+
+<!-- ============================================================ PASSO 5 -->
+<section class="pagina">
+  <span class="passo-num"><b>5</b>n8n</span>
+  <h2>Ligar as credenciais e publicar</h2>
+  <p class="lead">Agora cada caixinha que precisa de crachá recebe o seu. Faça em todos os 5 workflows.</p>
+
+  <div class="tela">
+    <div class="barra"><i></i><i></i><i></i><span>n8n · 42-simulado-entregar</span></div>
+    <div class="corpo">
+      <div style="display:flex;justify-content:flex-end;gap:2mm"><span class="btn-claro">Save</span><span class="btn-n8n marca"><span class="bolinha">C</span>Publish</span></div>
+      <div style="display:flex;align-items:center;padding:2mm 0">
+        <div class="no marca"><span class="bolinha">A</span><span class="icone">⚡</span>Pedido<br><span style="color:var(--suave)">Webhook</span></div><span class="fio"></span>
+        <div class="no marca"><span class="bolinha">B</span><span class="icone">🐘</span>Ler gabarito<br><span style="color:var(--suave)">Postgres</span></div><span class="fio"></span>
+        <div class="no"><span class="icone">{ }</span>Corrigir<br><span style="color:var(--suave)">Code</span></div><span class="fio"></span>
+        <div class="no"><span class="icone">?</span>Corrigir deu erro?<br><span style="color:var(--suave)">If</span></div><span class="fio"></span>
+        <div class="no marca"><span class="bolinha">B</span><span class="icone">🐘</span>Gravar entrega<br><span style="color:var(--suave)">Postgres</span></div><span class="fio"></span>
+        <div class="no"><span class="icone">↩</span>Responder</div>
+      </div>
+    </div>
+  </div>
+  <p class="ilustracao">Ilustração simplificada de um workflow no n8n</p>
+
+  <div class="duas" style="align-items:start">
+    <div style="display:flex;flex-direction:column;gap:2mm">
+      <h3 style="margin:0">A · Caixinha “Pedido” (Webhook)</h3>
+      <p>Clique duas vezes nela. Em <b>Credential for Header Auth</b>, escolha <b>Simulado ENEM · token do front</b>. Feche a caixinha.</p>
+      <h3>B · Caixinhas do tipo Postgres 🐘</h3>
+      <p>Clique duas vezes em cada uma. Em <b>Credential to connect with</b>, escolha <b>Supabase Postgres</b>. Feche.</p>
+      <h3>C · Salvar e publicar</h3>
+      <p>Clique em <b>Save</b> e depois em <b>Publish</b>. Publicar é o que faz o workflow funcionar de verdade, o dia todo.</p>
+    </div>
+    <div>
+      <div class="tela">
+        <div class="barra"><i></i><i></i><i></i><span>Pedido (Webhook)</span></div>
+        <div class="corpo">
+          <div class="campo"><label>HTTP Method</label><div class="valor">POST</div></div>
+          <div class="campo"><label>Path</label><div class="valor">simulado-enem/entregar</div></div>
+          <div class="campo"><label>Authentication</label><div class="valor">Header Auth</div></div>
+          <div class="campo marca"><span class="bolinha">A</span><label>Credential for Header Auth</label><div class="valor">Simulado ENEM · token do front</div></div>
+          <div class="campo"><label>Respond</label><div class="valor">Using 'Respond to Webhook' Node</div></div>
+        </div>
+      </div>
+      <p class="ilustracao">Ilustração simplificada · não mude os outros campos</p>
+    </div>
+  </div>
+
+  <table>
+    <tr><th>Workflow</th><th>Webhook “Pedido” (token)</th><th>Caixinhas Postgres (banco)</th></tr>
+    <tr><td>40-aluno</td><td>1</td><td>1</td></tr>
+    <tr><td>41-simulado-montar</td><td>1</td><td>2</td></tr>
+    <tr><td>42-simulado-entregar</td><td>1</td><td>2</td></tr>
+    <tr><td>43-simulado-ver</td><td>1</td><td>1</td></tr>
+    <tr><td>47-manter-supabase-ativo</td><td>não tem (começa com “A cada 6 horas”)</td><td>1</td></tr>
+  </table>
+  <div class="rodape"><span>Guia de instalação · Simulado ENEM</span><span>7</span></div>
+</section>
+
+<!-- ============================================================ PASSO 6 -->
+<section class="pagina">
+  <span class="passo-num"><b>6</b>n8n</span>
+  <h2>Descobrir o endereço do seu n8n</h2>
+  <p class="lead">A Vercel precisa saber onde fica a sua “cozinha”. Esse endereço aparece dentro de qualquer caixinha Webhook.</p>
+
+  <ol>
+    <li>Abra o workflow <b>40-aluno</b> e clique duas vezes na caixinha <b>Pedido</b>.</li>
+    <li>No alto da janela, em <b>Webhook URLs</b>, clique em <b>Production URL</b> (não em Test URL).</li>
+    <li>Aparece um endereço que termina em <code>/simulado-enem/aluno</code>. Clique nele para copiar.</li>
+    <li>Cole na linha <code>N8N_WEBHOOK_BASE=</code> do arquivo no VS Code e <b>apague o final</b> <code>/simulado-enem/aluno</code>. Salve o arquivo (<span class="tecla">⌘ Cmd</span> + <span class="tecla">S</span>).</li>
+  </ol>
+
+  <div class="tela">
+    <div class="barra"><i></i><i></i><i></i><span>Pedido (Webhook)</span></div>
+    <div class="corpo">
+      <div style="font-weight:600">Webhook URLs</div>
+      <div style="display:flex;gap:4mm"><span style="color:var(--suave)">Test URL</span><span class="marca" style="font-weight:600;border-bottom:.6mm solid var(--tinta)"><span class="bolinha">2</span>Production URL</span></div>
+      <div class="valor mono marca" style="border:1px solid var(--borda);border-radius:1.5mm;padding:2mm 3mm;font-size:9pt"><span class="bolinha">3</span>POST &nbsp;https://<b>seu-n8n.exemplo.com</b>/webhook/simulado-enem/aluno</div>
+    </div>
+  </div>
+  <p class="ilustracao">Ilustração simplificada · no lugar de “seu-n8n.exemplo.com” vai aparecer o endereço do seu n8n</p>
+
+  <h3>Como fica no arquivo</h3>
+  <table>
+    <tr><th style="width:42mm"></th><th>Exemplo</th></tr>
+    <tr><td>O que você copiou</td><td class="mono">https://seu-n8n.exemplo.com/webhook<span style="background:#FBE3E3;text-decoration:line-through">/simulado-enem/aluno</span></td></tr>
+    <tr><td>O que fica no arquivo</td><td class="mono" style="background:var(--certo-claro)">N8N_WEBHOOK_BASE=https://seu-n8n.exemplo.com/webhook</td></tr>
+  </table>
+
+  <div class="caixa dica">
+    <b class="t">Termina em /webhook, sem barra no final</b>
+    Se o seu n8n for do tipo <i>n8n Cloud</i>, o endereço é parecido com <span class="mono">https://bernardo.app.n8n.cloud/webhook</span>.
+  </div>
+
+  <div class="caixa ok">
+    <b class="t">Conferência rápida</b>
+    Cole o endereço completo (com <span class="mono">/simulado-enem/aluno</span>) numa aba nova do navegador e leia o fim da mensagem:<br>
+    ✔ <span class="mono" style="font-size:8.5pt">…Did you mean to make a POST request?</span> → o workflow está publicado. Perfeito.<br>
+    ✘ <span class="mono" style="font-size:8.5pt">The requested webhook … is not registered.</span> → não está publicado. Volte ao passo 5 e clique em <b>Publish</b>.
+  </div>
+  <div class="rodape"><span>Guia de instalação · Simulado ENEM</span><span>8</span></div>
+</section>
+
+<!-- ============================================================ PASSO 7a -->
+<section class="pagina">
+  <span class="passo-num"><b>7</b>Vercel</span>
+  <h2>Criar o site na Vercel</h2>
+  <p class="lead">A Vercel pega o projeto direto do seu GitHub e coloca o site no ar. Toda vez que o projeto mudar no GitHub, ela atualiza o site sozinha.</p>
+
+  <ol>
+    <li>Entre em <span class="mono">vercel.com</span> com a sua conta (de preferência <i>Continue with GitHub</i>).</li>
+    <li>Clique em <b>Add New…</b> (alto à direita) e escolha <b>Project</b>.</li>
+    <li>Em <b>Import Git Repository</b>, procure <b>pensi-pclb-simulador-enem-2026</b> e clique em <b>Import</b>.<br>
+      <span style="color:var(--suave)">Se ele não aparecer: clique em <i>Adjust GitHub App Permissions</i> (ou <i>Install</i>) e libere o acesso a esse repositório.</span></li>
+  </ol>
+
+  <div class="tela">
+    <div class="barra"><i></i><i></i><i></i><span>vercel.com/new</span></div>
+    <div class="corpo">
+      <div style="font-weight:600;font-size:11pt">Import Git Repository</div>
+      <div class="valor" style="border:1px solid var(--borda);border-radius:1.5mm;padding:1.6mm 3mm;color:var(--suave)">🔍 Search…</div>
+      <div style="border:1px solid var(--linha);border-radius:1.5mm">
+        <div class="marca" style="display:flex;justify-content:space-between;align-items:center;padding:2mm 3mm;border-bottom:1px solid var(--linha)"><span class="bolinha">3</span><span>▣ <b>pensi-pclb-simulador-enem-2026</b> <span style="color:var(--suave)">· be-sales14</span></span><span class="btn-vercel">Import</span></div>
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:2mm 3mm;color:var(--suave)"><span>▣ outro-projeto</span><span class="btn-claro">Import</span></div>
+      </div>
+    </div>
+  </div>
+  <p class="ilustracao">Ilustração simplificada da tela “New Project” da Vercel</p>
+
+  <div class="caixa dica">
+    <b class="t">Ainda não clique em Deploy</b>
+    Depois do Import aparece a tela <b>Configure Project</b>. Antes de publicar falta dizer à Vercel <b>em que pasta</b> está o site e <b>quais senhas</b> ele usa. É a próxima página.
+  </div>
+  <div class="rodape"><span>Guia de instalação · Simulado ENEM</span><span>9</span></div>
+</section>
+
+<!-- ============================================================ PASSO 7b -->
+<section class="pagina">
+  <span class="passo-num"><b>7</b>Vercel · continuação</span>
+  <h2>Configurar e publicar</h2>
+
+  <div class="duas" style="grid-template-columns:1fr 1.05fr;align-items:start">
+    <ol>
+      <li><b>Project Name:</b> pode deixar o sugerido ou escrever <code>simulado-enem</code>. Esse nome vira o endereço do site.</li>
+      <li><b>Framework Preset:</b> deixe <b>Next.js</b> (a Vercel descobre sozinha).</li>
+      <li><b>Root Directory:</b> clique em <b>Edit</b>, escolha a pasta <code>front</code> e clique em <b>Continue</b>. <br><span style="color:var(--errado)">Esse é o passo mais esquecido: sem ele o site não funciona.</span></li>
+      <li>Abra <b>Environment Variables</b> e crie as duas variáveis abaixo. Para cada uma: escreva o <b>Key</b>, cole o <b>Value</b> (copiado do arquivo no VS Code) e clique em <b>Add</b>.</li>
+      <li>Clique em <b>Deploy</b> e espere uns 2 minutos. Quando aparecer <i>Congratulations!</i>, o site está no ar.</li>
+    </ol>
+    <div>
+      <div class="tela">
+        <div class="barra"><i></i><i></i><i></i><span>Configure Project</span></div>
+        <div class="corpo">
+          <div class="campo"><label>Project Name</label><div class="valor">simulado-enem</div></div>
+          <div class="campo"><label>Framework Preset</label><div class="valor">▲ Next.js</div></div>
+          <div class="campo marca"><span class="bolinha">3</span><label>Root Directory</label><div class="valor" style="display:flex;justify-content:space-between">front <span class="btn-claro" style="padding:0 2mm">Edit</span></div></div>
+          <div style="font-weight:600;margin-top:1mm">▾ Environment Variables</div>
+          <div class="marca" style="display:grid;grid-template-columns:1fr 1fr;gap:1.5mm"><span class="bolinha">4</span>
+            <div class="valor mono" style="border:1px solid var(--borda);border-radius:1.5mm;padding:1.2mm 2mm">N8N_WEBHOOK_BASE</div>
+            <div class="valor mono" style="border:1px solid var(--borda);border-radius:1.5mm;padding:1.2mm 2mm;color:var(--suave)">https://…/webhook</div>
+            <div class="valor mono" style="border:1px solid var(--borda);border-radius:1.5mm;padding:1.2mm 2mm">N8N_TOKEN</div>
+            <div class="valor mono" style="border:1px solid var(--borda);border-radius:1.5mm;padding:1.2mm 2mm;color:var(--suave)">••••••••••••</div>
+          </div>
+          <div style="display:flex;justify-content:flex-end;margin-top:1mm"><span class="btn-vercel marca"><span class="bolinha">5</span>Deploy</span></div>
+        </div>
+      </div>
+      <p class="ilustracao">Ilustração simplificada da tela “Configure Project”</p>
+    </div>
+  </div>
+
+  <table>
+    <tr><th style="width:45mm">Key (escreva igualzinho)</th><th>Value (copie do arquivo)</th></tr>
+    <tr><td class="mono">N8N_WEBHOOK_BASE</td><td>o endereço que você montou no passo 6, terminando em <code>/webhook</code></td></tr>
+    <tr><td class="mono">N8N_TOKEN</td><td>o valor de <code>N8N_TOKEN</code>: o mesmo que você colou no n8n no passo 3</td></tr>
+  </table>
+
+  <div class="caixa atencao">
+    <b class="t">Esqueceu algo e já clicou em Deploy?</b>
+    Sem problema. Entre no projeto na Vercel → <b>Settings</b> → <b>Environment Variables</b> (ou <b>Build and Deployment</b> para o Root Directory), corrija e depois vá em <b>Deployments</b> → nos três pontinhos ⋯ do mais recente → <b>Redeploy</b>. A Vercel só lê as variáveis novas quando publica de novo.
+  </div>
+  <div class="caixa dica">
+    <b class="t">Nunca crie variável começando com NEXT_PUBLIC_</b>
+    Tudo que começa com <span class="mono">NEXT_PUBLIC_</span> fica visível para qualquer pessoa que abrir o site. O token tem que ficar escondido.
+  </div>
+  <div class="rodape"><span>Guia de instalação · Simulado ENEM</span><span>10</span></div>
+</section>
+
+<!-- ============================================================ PASSO 8a -->
+<section class="pagina">
+  <span class="passo-num"><b>8</b>navegador</span>
+  <h2>Testar o site</h2>
+  <p class="lead">Na tela de <i>Congratulations!</i>, clique na imagem do site (ou em <b>Continue to Dashboard → Visit</b>). O endereço é parecido com <span class="mono">https://simulado-enem.vercel.app</span>.</p>
+
+  <div>
+    <img class="print" src="img/site-inicio.png" alt="Tela inicial do Simulado ENEM com as opções de simulado">
+    <p class="legenda">Print real: a tela inicial. Escolha o tipo de simulado e como quer fazer.</p>
+  </div>
+
+  <h3>Teste rápido (5 minutos)</h3>
+  <ol>
+    <li>Escolha <b>Personalizado</b>, marque só <b>Matemática</b> e coloque <b>5</b> questões.</li>
+    <li>Clique em <b>Fazer na tela</b>. O site pede email e nome: use os seus.</li>
+    <li>A prova abre com as questões (imagens das provas oficiais). Marque algumas respostas.</li>
+    <li>Clique em <b>Entregar</b> e confirme. Deve aparecer a sua nota.</li>
+    <li>Clique em <b>Meu histórico</b>: a prova tem que estar lá.</li>
+  </ol>
+  <div class="caixa ok">
+    <b class="t">Apareceu a nota? Está tudo funcionando</b>
+    Site (Vercel) → cozinha (n8n) → despensa (Supabase): os três estão conversando. Avise o Thiago e mande o endereço do site.
+  </div>
+  <div class="rodape"><span>Guia de instalação · Simulado ENEM</span><span>11</span></div>
+</section>
+
+<!-- ============================================================ PASSO 8b -->
+<section class="pagina">
+  <span class="passo-num"><b>8</b>navegador · o que você vai ver</span>
+  <h2>As telas do simulado</h2>
+  <div>
+    <img class="print corte" src="img/site-prova.png" alt="Tela da prova com questão, bolhas de resposta e cartão-resposta lateral">
+    <p class="legenda">A prova: cada questão é o recorte da prova oficial, com as bolhas A–E embaixo. À direita, o cartão-resposta mostra o que já foi respondido (azul) e o que ficou para revisar (laranja).</p>
+  </div>
+  <div>
+    <img class="print corte" src="img/site-resultado.png" alt="Tela de resultado com acertos por área e por disciplina e gabarito">
+    <p class="legenda">O resultado: nota, acertos por área e por disciplina e o gabarito. O gabarito só chega ao navegador depois da entrega.</p>
+  </div>
+  <div class="rodape"><span>Guia de instalação · Simulado ENEM</span><span>12</span></div>
+</section>
+
+<!-- ============================================================ PASSO 8c -->
+<section class="pagina">
+  <span class="passo-num"><b>8</b>navegador · prova no papel</span>
+  <h2>Quem prefere imprimir</h2>
+  <p class="lead">O botão <b>Baixar PDF</b> monta a prova em duas colunas, como o caderno do ENEM, com um cartão-resposta em branco na última página. Depois o aluno passa as respostas para o site.</p>
+  <div class="duas">
+    <div><img class="print" src="img/pdf-pagina1.png" alt="Primeira página do PDF em duas colunas"><p class="legenda">Primeira página do PDF.</p></div>
+    <div><img class="print" src="img/pdf-cartao.png" alt="Última página do PDF com cartão-resposta e código"><p class="legenda">Última página: cartão-resposta com o <b>código</b> da prova (8 letras e números).</p></div>
+  </div>
+  <div>
+    <img class="print" src="img/site-corrigir.png" alt="Tela Corrigir prova feita no papel com a grade de respostas" style="max-height:78mm;object-fit:cover;object-position:top">
+    <p class="legenda">Em <b>Corrigir prova feita no papel</b>, o aluno digita o código e marca as respostas que fez no papel.</p>
+  </div>
+  <div class="rodape"><span>Guia de instalação · Simulado ENEM</span><span>13</span></div>
+</section>
+
+<!-- ============================================================ PROBLEMAS -->
+<section class="pagina">
+  <h2>Se algo der errado</h2>
+  <p class="lead">Procure a mensagem que apareceu no site. Quase sempre é uma destas.</p>
+  <table>
+    <tr><th style="width:62mm">O site mostra</th><th>O que fazer</th></tr>
+    <tr><td><b>“O front não está autorizado no n8n: confira o N8N_TOKEN.”</b></td><td>O token da Vercel é diferente do token do n8n. Copie de novo o <code>N8N_TOKEN</code> do arquivo, cole na credencial do n8n (passo 3) <b>e</b> na Vercel (passo 7), e faça <b>Redeploy</b> na Vercel. Confira também se a credencial foi escolhida na caixinha “Pedido” dos workflows 40 a 43.</td></tr>
+    <tr><td><b>“O workflow do n8n não respondeu: confira se ele está ativo.”</b></td><td>Algum workflow não foi publicado, ou o <code>N8N_WEBHOOK_BASE</code> está errado. Confira o <b>Publish</b> (passo 5) e o endereço (passo 6): tem que terminar em <code>/webhook</code>.</td></tr>
+    <tr><td><b>“O servidor do simulado teve um problema.”</b></td><td>Algo quebrou dentro do n8n. Abra o n8n → <b>Executions</b>, clique na execução vermelha mais recente e veja qual caixinha falhou. Se for uma caixinha Postgres, confira a credencial Supabase Postgres (passo 2).</td></tr>
+    <tr><td><b>“Não foi possível falar com o servidor do simulado.”</b></td><td>O n8n está fora do ar ou o endereço está digitado errado.</td></tr>
+    <tr><td>O site abre em branco ou dá erro 404 da Vercel</td><td>O <b>Root Directory</b> não está como <code>front</code>. Vercel → Settings → Build and Deployment → Root Directory → <code>front</code> → Save → Redeploy.</td></tr>
+    <tr><td>As questões aparecem sem imagem</td><td>As imagens vêm de um serviço da Amazon (S3) mantido pelo Thiago. Avise o Thiago.</td></tr>
+    <tr><td>Email do Supabase: <i>“your project will be paused”</i></td><td>O workflow 47 parou. Confira no n8n se ele está <b>publicado</b> e veja em <b>Executions</b> se ele roda a cada 6 horas. Se o projeto já pausou: entre no Supabase e clique em <b>Resume project</b>.</td></tr>
+  </table>
+
+  <div class="caixa dica">
+    <b class="t">Ainda travado?</b>
+    Tire um print da tela com o erro (no Mac: <span class="tecla">⌘ Cmd</span> + <span class="tecla">⇧ Shift</span> + <span class="tecla">4</span>) e mande para o Thiago. <b>Nunca</b> mande o arquivo de senhas nem um print dele.
+  </div>
+  <div class="rodape"><span>Guia de instalação · Simulado ENEM</span><span>14</span></div>
+</section>
+
+<!-- ============================================================ DEPOIS -->
+<section class="pagina">
+  <h2>Depois que estiver no ar</h2>
+
+  <h3>Atualizar o site</h3>
+  <p>Quando alguém mudar o projeto no GitHub (na branch <code>main</code>), a Vercel publica a versão nova sozinha em 1 ou 2 minutos. Você não precisa fazer nada.</p>
+
+  <h3>Atualizar um workflow do n8n</h3>
+  <p>Se o Thiago avisar que um workflow mudou: abra o workflow no n8n → <b>⋯ → Import from File…</b> → escolha o arquivo novo da pasta <code>n8n</code>. Importe <b>dentro do workflow que já existe</b> (não crie outro), para o endereço continuar o mesmo. Depois ligue as credenciais de novo (passo 5), <b>Save</b> e <b>Publish</b>.</p>
+
+  <h3>Trocar o token (se ele vazar)</h3>
+  <p>Peça um token novo ao Thiago, ou gere um no Terminal com <code>openssl rand -hex 32</code>. Cole o mesmo valor na credencial do n8n e na variável <code>N8N_TOKEN</code> da Vercel, e faça <b>Redeploy</b>. O token antigo para de funcionar na hora.</p>
+
+  <h3>Palavras que aparecem no guia</h3>
+  <table>
+    <tr><th style="width:38mm">Palavra</th><th>Quer dizer</th></tr>
+    <tr><td>Credencial</td><td>O “crachá” que o n8n usa para entrar num serviço (banco, senha do site).</td></tr>
+    <tr><td>Workflow</td><td>Uma receita do n8n: caixinhas ligadas que fazem uma tarefa.</td></tr>
+    <tr><td>Webhook</td><td>A “campainha” do workflow: um endereço na internet que, quando chamado, faz o workflow rodar.</td></tr>
+    <tr><td>Publish</td><td>Ligar o workflow de verdade. Sem publicar, ele só roda quando você clica para testar.</td></tr>
+    <tr><td>Token</td><td>A senha combinada entre o site e o n8n.</td></tr>
+    <tr><td>Deploy / Redeploy</td><td>Publicar o site (de novo) na Vercel.</td></tr>
+    <tr><td>Environment Variable</td><td>Uma configuração secreta do site, guardada na Vercel e não no GitHub.</td></tr>
+    <tr><td>Root Directory</td><td>A pasta do projeto onde está o site: no nosso caso, <code>front</code>.</td></tr>
+    <tr><td>Supabase</td><td>O banco de dados: questões, alunos, provas montadas e notas.</td></tr>
+  </table>
+
+  <div class="caixa ok">
+    <b class="t">Pronto!</b>
+    Agora o Simulado ENEM roda inteiro nas suas contas. Mande o endereço do site para o Thiago e para a turma.
+  </div>
+  <div class="rodape"><span>Guia de instalação · Simulado ENEM</span><span>15</span></div>
+</section>
+
+</body>
+</html>

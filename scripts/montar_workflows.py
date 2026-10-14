@@ -713,6 +713,24 @@ return [{{ json: {{ url: `${{BASE}}/simulado-enem/prova?${{qs}}` }} }}];""")
     wf.salvar()
 
 
+# ------------------------------------------------------------------ manter o Supabase ativo (47)
+# O Supabase Free pausa o projeto depois de uma semana com poucas consultas. A cada 6 horas
+# este workflow grava um batimento em manter_ativo (sql/005) e apaga os de mais de 30 dias.
+
+def wf_47():
+    wf = Workflow("47-manter-supabase-ativo")
+    t = wf.no("A cada 6 horas", "n8n-nodes-base.scheduleTrigger", 1.2, [0, 0],
+              {"rule": {"interval": [{"field": "hours", "hoursInterval": 6}]}})
+    p = postgres(wf, "Registrar batimento", [220, 0], """-- Consulta de verdade no banco: e isso que o Supabase conta como atividade.
+with novo as (insert into public.manter_ativo (origem) values ('n8n') returning ping_em),
+velhos as (delete from public.manter_ativo where ping_em < now() - interval '30 days' returning 1)
+select (select ping_em from novo) as ping_em,
+       (select count(*) from velhos) as apagados,
+       (select count(*) from public.questoes_enem) as questoes_no_banco;""", None)
+    wf.cadeia(t, p)
+    wf.salvar()
+
+
 if __name__ == "__main__":
-    for f in (wf_99, wf_98, wf_10, wf_02, wf_00, wf_40, wf_41, wf_42, wf_43, wf_44, wf_45, wf_46):
+    for f in (wf_99, wf_98, wf_10, wf_02, wf_00, wf_40, wf_41, wf_42, wf_43, wf_44, wf_45, wf_46, wf_47):
         f()

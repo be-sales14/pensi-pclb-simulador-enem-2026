@@ -1,0 +1,63 @@
+{
+  "name": "47-manter-supabase-ativo",
+  "nodes": [
+    {
+      "id": "9d76b82f-fff1-5d36-8698-dd04767daf01",
+      "name": "A cada 6 horas",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "hours",
+              "hoursInterval": 6
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "7fb2b74b-ffec-5c3e-817e-cda701e0ba9d",
+      "name": "Registrar batimento",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        220,
+        0
+      ],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "-- Consulta de verdade no banco: e isso que o Supabase conta como atividade.\nwith novo as (insert into public.manter_ativo (origem) values ('n8n') returning ping_em),\nvelhos as (delete from public.manter_ativo where ping_em < now() - interval '30 days' returning 1)\nselect (select ping_em from novo) as ping_em,\n       (select count(*) from velhos) as apagados,\n       (select count(*) from public.questoes_enem) as questoes_no_banco;",
+        "options": {}
+      },
+      "credentials": {
+        "postgres": {
+          "id": "",
+          "name": "Supabase Postgres"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "A cada 6 horas": {
+      "main": [
+        [
+          {
+            "node": "Registrar batimento",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "pinData": {}
+}
