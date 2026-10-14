@@ -203,7 +203,7 @@
       <span style="color:var(--suave);margin-top:1.5mm"># --- n8n · credencial "Simulado ENEM · token do front" ---</span>
       <span>N8N_TOKEN=<span style="color:var(--suave)">••••••••••••••••••••••••••••••••</span></span>
       <span style="color:var(--suave);margin-top:1.5mm"># --- Vercel ---</span>
-      <span>N8N_WEBHOOK_BASE=<span style="color:var(--suave)">(você preenche no passo 6)</span></span>
+      <span>N8N_WEBHOOK_BASE=<span style="color:var(--suave)">(deixe vazio: esse vai direto na Vercel, passo 7)</span></span>
     </div>
   </div>
   <p class="legenda">Para copiar um valor: selecione só o que vem <b>depois do sinal =</b> e aperte <span class="tecla">⌘ Cmd</span> + <span class="tecla">C</span>.</p>
@@ -423,13 +423,13 @@
 <section class="pagina">
   <span class="passo-num"><b>6</b>n8n</span>
   <h2>Descobrir o endereço do seu n8n</h2>
-  <p class="lead">A Vercel precisa saber onde fica a sua “cozinha”. Esse endereço aparece dentro de qualquer caixinha Webhook.</p>
+  <p class="lead">A Vercel precisa saber onde fica a sua “cozinha”. Esse endereço aparece dentro de qualquer caixinha Webhook. Neste passo você só <b>encontra e confere</b> o endereço: não precisa escrever nada em arquivo.</p>
 
   <ol>
     <li>Abra o workflow <b>40-aluno</b> e clique duas vezes na caixinha <b>Pedido</b>.</li>
     <li>No alto da janela, em <b>Webhook URLs</b>, clique em <b>Production URL</b> (não em Test URL).</li>
-    <li>Aparece um endereço que termina em <code>/simulado-enem/aluno</code>. Clique nele para copiar.</li>
-    <li>Cole na linha <code>N8N_WEBHOOK_BASE=</code> do arquivo no VS Code e <b>apague o final</b> <code>/simulado-enem/aluno</code>. Salve o arquivo (<span class="tecla">⌘ Cmd</span> + <span class="tecla">S</span>).</li>
+    <li>Aparece um endereço que termina em <code>/simulado-enem/aluno</code>. Esse é o endereço do seu n8n.</li>
+    <li><b>Deixe essa aba do n8n aberta.</b> No passo 7 você volta aqui, copia o endereço e cola direto na Vercel.</li>
   </ol>
 
   <div class="tela">
@@ -442,16 +442,16 @@
   </div>
   <p class="ilustracao">Ilustração simplificada · no lugar de “seu-n8n.exemplo.com” vai aparecer o endereço do seu n8n</p>
 
-  <h3>Como fica no arquivo</h3>
+  <h3>O que a Vercel vai receber</h3>
   <table>
     <tr><th style="width:42mm"></th><th>Exemplo</th></tr>
-    <tr><td>O que você copiou</td><td class="mono">https://seu-n8n.exemplo.com/webhook<span style="background:#FBE3E3;text-decoration:line-through">/simulado-enem/aluno</span></td></tr>
-    <tr><td>O que fica no arquivo</td><td class="mono" style="background:var(--certo-claro)">N8N_WEBHOOK_BASE=https://seu-n8n.exemplo.com/webhook</td></tr>
+    <tr><td>O endereço do n8n</td><td class="mono">https://seu-n8n.exemplo.com/webhook<span style="background:#FBE3E3;text-decoration:line-through">/simulado-enem/aluno</span></td></tr>
+    <tr><td>O que vai na Vercel</td><td class="mono" style="background:var(--certo-claro)">https://seu-n8n.exemplo.com/webhook</td></tr>
   </table>
 
   <div class="caixa dica">
-    <b class="t">Termina em /webhook, sem barra no final</b>
-    Se o seu n8n for do tipo <i>n8n Cloud</i>, o endereço é parecido com <span class="mono">https://bernardo.app.n8n.cloud/webhook</span>.
+    <b class="t">Não precisa criar .env nem .env.local</b>
+    As configurações do site ficam guardadas na Vercel (passo 7), não no seu computador. O <span class="mono">.env.local</span> só serve para rodar o site no próprio computador, e isso não faz parte deste guia.
   </div>
 
   <div class="caixa ok">
@@ -506,7 +506,9 @@
       <li><b>Project Name:</b> pode deixar o sugerido ou escrever <code>simulado-enem</code>. Esse nome vira o endereço do site.</li>
       <li><b>Framework Preset:</b> deixe <b>Next.js</b> (a Vercel descobre sozinha).</li>
       <li><b>Root Directory:</b> clique em <b>Edit</b>, escolha a pasta <code>front</code> e clique em <b>Continue</b>. <br><span style="color:var(--errado)">Esse é o passo mais esquecido: sem ele o site não funciona.</span></li>
-      <li>Abra <b>Environment Variables</b> e crie as duas variáveis abaixo. Para cada uma: escreva o <b>Key</b>, cole o <b>Value</b> (copiado do arquivo no VS Code) e clique em <b>Add</b>.</li>
+      <li>Abra <b>Environment Variables</b> e crie as duas variáveis, uma de cada vez:
+        <br><b>a)</b> Key <code>N8N_WEBHOOK_BASE</code>. Vá à aba do n8n (passo 6), copie o <i>Production URL</i>, cole no Value e, <b>ali mesmo</b>, apague o final <code>/simulado-enem/aluno</code>. Clique em <b>Add</b>.
+        <br><b>b)</b> Key <code>N8N_TOKEN</code>. Copie o valor de <code>N8N_TOKEN</code> no arquivo aberto no VS Code e cole no Value. Clique em <b>Add</b>.</li>
       <li>Clique em <b>Deploy</b> e espere uns 2 minutos. Quando aparecer <i>Congratulations!</i>, o site está no ar.</li>
     </ol>
     <div>
@@ -531,9 +533,9 @@
   </div>
 
   <table>
-    <tr><th style="width:45mm">Key (escreva igualzinho)</th><th>Value (copie do arquivo)</th></tr>
-    <tr><td class="mono">N8N_WEBHOOK_BASE</td><td>o endereço que você montou no passo 6, terminando em <code>/webhook</code></td></tr>
-    <tr><td class="mono">N8N_TOKEN</td><td>o valor de <code>N8N_TOKEN</code>: o mesmo que você colou no n8n no passo 3</td></tr>
+    <tr><th style="width:45mm">Key (escreva igualzinho)</th><th>Value (de onde copiar)</th></tr>
+    <tr><td class="mono">N8N_WEBHOOK_BASE</td><td>do n8n (passo 6): o Production URL <b>sem</b> o final <code>/simulado-enem/aluno</code>, terminando em <code>/webhook</code></td></tr>
+    <tr><td class="mono">N8N_TOKEN</td><td>do arquivo no VS Code: o mesmo valor que você colou no n8n no passo 3</td></tr>
   </table>
 
   <div class="caixa atencao">
