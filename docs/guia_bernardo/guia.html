@@ -507,8 +507,9 @@
       <li><b>Framework Preset:</b> deixe <b>Next.js</b> (a Vercel descobre sozinha).</li>
       <li><b>Root Directory:</b> clique em <b>Edit</b>, escolha a pasta <code>front</code> e clique em <b>Continue</b>. <br><span style="color:var(--errado)">Esse é o passo mais esquecido: sem ele o site não funciona.</span></li>
       <li>Abra <b>Environment Variables</b> e crie as duas variáveis, uma de cada vez:
-        <br><b>a)</b> Key <code>N8N_WEBHOOK_BASE</code>. Vá à aba do n8n (passo 6), copie o <i>Production URL</i>, cole no Value e, <b>ali mesmo</b>, apague o final <code>/simulado-enem/aluno</code>. Clique em <b>Add</b>.
-        <br><b>b)</b> Key <code>N8N_TOKEN</code>. Copie o valor de <code>N8N_TOKEN</code> no arquivo aberto no VS Code e cole no Value. Clique em <b>Add</b>.</li>
+        <br><b>Key</b> é só o <b>nome</b> (digite à mão); <b>Value</b> é o conteúdo (cole).
+        <br><b>a)</b> Key: <code>N8N_WEBHOOK_BASE</code>. Value: vá à aba do n8n (passo 6), copie o <i>Production URL</i>, cole e, <b>ali mesmo</b>, apague o final <code>/simulado-enem/aluno</code>.
+        <br><b>b)</b> Clique em <b>Add More</b>. Key: <code>N8N_TOKEN</code>. Value: o valor de <code>N8N_TOKEN</code> do arquivo aberto no VS Code.</li>
       <li>Clique em <b>Deploy</b> e espere uns 2 minutos. Quando aparecer <i>Congratulations!</i>, o site está no ar.</li>
     </ol>
     <div>
