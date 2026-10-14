@@ -515,8 +515,12 @@ select s.id as simulado_id, s.spec as pedido,
                order by it.numero)
           from public.simulado_enem_itens it join public.questoes_enem q on q.id = it.questao_id
           where it.simulado_id = s.id) as questoes
-from public.simulados_enem s
-where s.id::text = (select j->>'simulado_id' from e);""", "={{ JSON.stringify($json.body ?? {}) }}", uma_vez=True)
+from public.simulados_enem s, e
+-- Aceita o id inteiro ou o codigo curto impresso no PDF (8 primeiros caracteres).
+where lower(e.j->>'simulado_id') ~ '^[0-9a-f-]{8,36}$'
+  and s.id::text like lower(e.j->>'simulado_id') || '%'
+order by s.criado_em desc
+limit 1;""", "={{ JSON.stringify($json.body ?? {}) }}", uma_vez=True)
     v = code(wf, "Conferir", [440, 0], None, """const r = $input.first().json;
 if (!r.simulado_id) throw new Error('Simulado nao encontrado. Confira o codigo impresso no PDF.');
 return [{ json: r }];""")

@@ -36,7 +36,7 @@
       ],
       "parameters": {
         "operation": "executeQuery",
-        "query": "-- Reabre um simulado pelo codigo (quem fez no PDF digita as respostas depois). Sem gabarito.\nwith e as (select $1::jsonb as j)\nselect s.id as simulado_id, s.spec as pedido,\n       (select json_agg(json_build_object('numero', it.numero, 'area', q.area, 'disciplina', q.disciplina,\n               'imagem_url', q.imagem_url, 'largura', q.imagem_largura, 'altura', q.imagem_altura)\n               order by it.numero)\n          from public.simulado_enem_itens it join public.questoes_enem q on q.id = it.questao_id\n          where it.simulado_id = s.id) as questoes\nfrom public.simulados_enem s\nwhere s.id::text = (select j->>'simulado_id' from e);",
+        "query": "-- Reabre um simulado pelo codigo (quem fez no PDF digita as respostas depois). Sem gabarito.\nwith e as (select $1::jsonb as j)\nselect s.id as simulado_id, s.spec as pedido,\n       (select json_agg(json_build_object('numero', it.numero, 'area', q.area, 'disciplina', q.disciplina,\n               'imagem_url', q.imagem_url, 'largura', q.imagem_largura, 'altura', q.imagem_altura)\n               order by it.numero)\n          from public.simulado_enem_itens it join public.questoes_enem q on q.id = it.questao_id\n          where it.simulado_id = s.id) as questoes\nfrom public.simulados_enem s, e\n-- Aceita o id inteiro ou o codigo curto impresso no PDF (8 primeiros caracteres).\nwhere lower(e.j->>'simulado_id') ~ '^[0-9a-f-]{8,36}$'\n  and s.id::text like lower(e.j->>'simulado_id') || '%'\norder by s.criado_em desc\nlimit 1;",
         "options": {
           "queryReplacement": "={{ JSON.stringify($json.body ?? {}) }}"
         }

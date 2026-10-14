@@ -1,0 +1,49 @@
+@import "tailwindcss";
+
+/* Paleta do layout B (escolhido no canvas). So tema claro: os recortes das provas sao
+   paginas brancas, e um fundo escuro em volta deles cansa mais do que ajuda. */
+@theme {
+  --color-tinta: #15191F;
+  --color-texto: #3A414C;
+  --color-suave: #59616E;
+  --color-linha: #DDE2EA;
+  --color-borda: #C4CBD6;
+  --color-superficie: #F3F5F8;
+  --color-destaque: #1D4ED8;
+  --color-destaque-escuro: #1E3A8A;
+  --color-revisar: #B45309;
+  --color-certo: #15803D;
+  --color-errado: #B91C1C;
+  --font-sans: var(--font-plex), system-ui, sans-serif;
+  --font-mono: var(--font-plex-mono), ui-monospace, monospace;
+}
+
+/* Na camada base: as classes do Tailwind (text-white em link-botao etc.) vencem. */
+@layer base {
+  html { color-scheme: light; }
+  body { background: #FFFFFF; color: var(--color-tinta); }
+  a { color: var(--color-destaque); }
+  a:hover { color: var(--color-destaque-escuro); }
+  :focus-visible { outline: 3px solid var(--color-destaque); outline-offset: 2px; }
+}
+
+/* ------------------------------------------------------------------ impressao (Exportar PDF)
+   Duas colunas, como o caderno do ENEM: o recorte ja tem a largura da coluna original;
+   questao de pagina inteira ocupa as duas. O cartao-resposta vai na ultima pagina. */
+.so-impressao { display: none; }
+@media print {
+  @page { margin: 12mm; }
+  .nao-imprimir { display: none !important; }
+  .so-impressao { display: block; }
+  body { background: #fff; }
+  /* multicoluna nao se aplica a flex: no papel o caderno vira bloco */
+  .caderno, .caderno > section { display: block; }
+  .caderno { columns: 2; column-gap: 22px; }
+  .caderno .titulo-area { margin: 0 0 12px; }
+  .caderno .questao { margin-bottom: 14px; padding-bottom: 10px; }
+  .caderno .titulo-area, .caderno .questao-larga, .caderno .cartao-impresso { column-span: all; }
+  .caderno .questao { break-inside: avoid; }
+  .caderno .questao img { width: 100% !important; height: auto !important; }
+  .cartao-impresso { break-before: page; }
+  a { color: inherit; text-decoration: none; }
+}
