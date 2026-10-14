@@ -19,14 +19,14 @@ export class ErroDoBack extends Error {
 export const modoDemonstracao = () => !process.env.N8N_WEBHOOK_BASE;
 
 export async function chamarN8n<T>(rota: Rota, corpo: unknown): Promise<T> {
-  const base = process.env.N8N_WEBHOOK_BASE;
+  const base = process.env.N8N_WEBHOOK_BASE?.trim().replace(/\/+$/, '');
   if (!base) return chamarDemo(rota, corpo) as Promise<T>;
 
   let resposta: Response;
   try {
     resposta = await fetch(`${base.replace(/\/$/, '')}/simulado-enem/${rota}`, {
       method: 'POST',
-      headers: { 'content-type': 'application/json', 'x-simulado-token': process.env.N8N_TOKEN ?? '' },
+      headers: { 'content-type': 'application/json', 'x-simulado-token': (process.env.N8N_TOKEN ?? '').trim() },
       body: JSON.stringify(corpo),
       cache: 'no-store',
       signal: AbortSignal.timeout(30_000),
